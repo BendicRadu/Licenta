@@ -46,7 +46,6 @@ class RenderMap:
             self.screen_map.move_player(direction)
             self.camera.move_camera(direction)
 
-
     def validate_direction(self, direction):
 
         cam_x, cam_y = self.camera.mock_move(direction)
@@ -58,36 +57,41 @@ class RenderMap:
         )
 
         tile_bottom_right = self.screen_map.get_tile_from_screen(
-            Constants.PLAYER_SCREEN_X + Constants.PLAYER_SIZE,
-            Constants.PLAYER_SCREEN_Y + Constants.PLAYER_SIZE,
+            Constants.PLAYER_SCREEN_X + Constants.PLAYER_SIZE // 2,
+            Constants.PLAYER_SCREEN_Y + Constants.PLAYER_SIZE // 2,
             cam_x, cam_y
         )
 
         player_rect_top_left = pygame.Rect(
             Constants.PLAYER_SCREEN_X,
             Constants.PLAYER_SCREEN_Y,
-            1, 1
+            Constants.PLAYER_SIZE, Constants.PLAYER_SIZE
         )
 
         player_rect_bottom_right = pygame.Rect(
-            Constants.PLAYER_SCREEN_X + Constants.PLAYER_SIZE,
-            Constants.PLAYER_SCREEN_Y + Constants.PLAYER_SIZE,
-            1, 1
+            Constants.PLAYER_SCREEN_X + Constants.PLAYER_SIZE // 2,
+            Constants.PLAYER_SCREEN_Y + Constants.PLAYER_SIZE // 2,
+            10, 10
         )
 
         tile_rect_top_left = self.to_rect(tile_top_left, cam_x, cam_y)
         tile_rect_bottom_right = self.to_rect(tile_bottom_right, cam_x, cam_y)
 
+        # Check if the top and bottom corners collide (Since the tile starts from top-left)
+
         if int(tile_top_left.tile_code) in Constants.TILES_WITH_COLLIDERS:
-            if player_rect_top_left.colliderect(tile_rect_top_left):
+            if player_rect_top_left.colliderect(tile_rect_top_left) \
+                    or player_rect_bottom_right.colliderect(tile_rect_top_left):
                 return False
 
+        # Check collision with tile underneath
+
         if int(tile_bottom_right.tile_code) in Constants.TILES_WITH_COLLIDERS:
-            if player_rect_bottom_right.colliderect(tile_rect_bottom_right):
+            if player_rect_bottom_right.colliderect(tile_rect_bottom_right)\
+                    or player_rect_top_left.colliderect(tile_rect_top_left):
                 return False
 
         return True
-
 
     def to_rect(self, tile, cam_x, cam_y):
 

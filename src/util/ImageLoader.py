@@ -13,7 +13,10 @@ class ImageLoader:
     def load(self, tile_code):
 
         if tile_code not in self.image_map.keys():
-            self.image_map[tile_code] = pygame.image.load(self.PATH + str(tile_code))
+            picture = pygame.image.load(self.PATH + str(tile_code) + ".png")
+            picture.convert()
+
+            self.image_map[tile_code] = pygame.transform.scale(picture, (Constants.TILE_SIZE, Constants.TILE_SIZE))
 
         return self.image_map[tile_code]
 

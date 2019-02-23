@@ -2,6 +2,8 @@ import pygame
 
 from maps.RenderMap.RenderMap import RenderMap
 from util import Constants
+from util.ImageLoader import ImageLoader
+from util.Singleton import Singleton
 
 
 class MainLoop:
@@ -29,23 +31,9 @@ class MainLoop:
 
         while not game_over:
 
-            sprites = self.render_map.get_sprites()
-            selected_tile = self.render_map.get_selected_tile(pygame.mouse.get_pos())
-
-
-            for sprite in sprites:
-                self.draw_rect(self.screen, (0, int(sprite.tile_code) * 100 + 50, 0), (0, 0, 0),
-                               pygame.Rect(sprite.x, sprite.y, Constants.TILE_SIZE, Constants.TILE_SIZE))
-
-            pygame.draw.rect(self.screen, (255, 0, 0),
-                             pygame.Rect(Constants.PLAYER_SCREEN_X,
-                                         Constants.PLAYER_SCREEN_Y,
-                                         Constants.PLAYER_SIZE, Constants.PLAYER_SIZE),
-                             0)
-
-            pygame.draw.rect(self.screen, (255, 0, 0),
-                             pygame.Rect(selected_tile.x, selected_tile.y, Constants.TILE_SIZE, Constants.TILE_SIZE),
-                             2)
+            self.draw_tile_sprites()
+            self.draw_selected_tile()
+            self.draw_player()
 
             for event in pygame.event.get():
 
@@ -99,11 +87,41 @@ class MainLoop:
                 self.render_map.move_player((dx, dy))
 
             pygame.display.flip()
-            self.clock.tick(1000)
+            self.clock.tick(5000)
 
     def draw_rect(self, surface, fill_color, outline_color, rect, border=1):
         surface.fill(outline_color, rect)
         surface.fill(fill_color, rect.inflate(-border * 2, -border * 2))
+
+
+
+    def draw_tile_sprites(self):
+
+        sprites = self.render_map.get_sprites()
+
+        for sprite in sprites:
+
+            rect = pygame.Rect(sprite.x, sprite.y, Constants.TILE_SIZE, Constants.TILE_SIZE)
+
+            self.screen.blit(Singleton.imageLoader.load(sprite.tile_code), rect)
+
+
+    def draw_selected_tile(self):
+
+        selected_tile = self.render_map.get_selected_tile(pygame.mouse.get_pos())
+
+        pygame.draw.rect(self.screen, (255, 0, 0),
+                         pygame.Rect(selected_tile.x, selected_tile.y, Constants.TILE_SIZE, Constants.TILE_SIZE),
+                         2)
+
+
+    def draw_player(self):
+
+        pygame.draw.rect(self.screen, (255, 0, 0),
+                         pygame.Rect(Constants.PLAYER_SCREEN_X,
+                                     Constants.PLAYER_SCREEN_Y,
+                                     Constants.PLAYER_SIZE, Constants.PLAYER_SIZE),
+                         0)
 
 
 a = MainLoop()
