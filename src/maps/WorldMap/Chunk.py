@@ -19,10 +19,9 @@ class Chunk:
         else:
             self.generate_chunk()
 
-
     def is_chunk_generated(self):
 
-        file_path = "C:\\Licenta\\Licenta\\resources\\WorldMap\\" \
+        file_path = "C:\\Users\\STEFI\\PycharmProjects\\Licenta\\resources\\WorldMap" \
                     + str(self.offset_i) + "-" + str(self.offset_j) + "-chunk.txt"
 
         try:
@@ -32,17 +31,14 @@ class Chunk:
         except OSError:
             return False
 
-
     def load_chunk(self):
 
-        file_path = "C:\\Licenta\\Licenta\\resources\\WorldMap\\" \
+        file_path = "C:\\Users\\STEFI\\PycharmProjects\\Licenta\\resources\\WorldMap" \
                     + str(self.offset_i) + "-" + str(self.offset_j) + "-chunk.txt"
 
         with open(file_path, "r") as file:
             for line in file:
                 self.matrix.append(line.strip("\n").split(","))
-
-
 
     def generate_chunk(self):
 
@@ -60,10 +56,9 @@ class Chunk:
 
         self.save_chunk()
 
-
     def save_chunk(self):
 
-        file_path = "C:\\Licenta\\Licenta\\resources\\WorldMap\\"
+        file_path = "C:\\Users\\STEFI\\PycharmProjects\\Licenta\\resources\\WorldMap"
         file_path += str(self.offset_i) + "-" + str(self.offset_j) + "-chunk.txt"
 
         file = open(file_path, "w+", newline='')
@@ -72,7 +67,5 @@ class Chunk:
             wr = csv.writer(file)
             wr.writerow(row)
 
-
     def get_tile(self, pos_tuple):
         return self.matrix[pos_tuple[0]][pos_tuple[1]]
-

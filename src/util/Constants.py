@@ -9,8 +9,8 @@ PLAYER_SIZE = 20
 TILE_SIZE = 50
 
 # Playable area
-GAME_SCREEN_WIDTH = 1200
-GAME_SCREEN_HEIGHT = 800
+GAME_SCREEN_WIDTH = 800
+GAME_SCREEN_HEIGHT = 600
 
 # Whole game window (With UI)
 SCREEN_WIDTH = 1900
@@ -35,7 +35,7 @@ HEIGHT_NO_OF_TILES = GAME_SCREEN_HEIGHT // TILE_SIZE + 2
 # Trees, rocks, etc. to be placed on the map
 
 # When generating the chunk, a random index is chosen
-SPAWN_CHANCE_LIST = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 2, 2, 2, 2, 2]
+SPAWN_CHANCE_LIST = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 2]
 
 CHUNK_MIDDLE_OFFSET_I = 50
 CHUNK_MIDDLE_OFFSET_J = 50

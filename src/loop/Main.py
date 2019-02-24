@@ -2,7 +2,6 @@ import pygame
 
 from maps.RenderMap.RenderMap import RenderMap
 from util import Constants
-from util.ImageLoader import ImageLoader
 from util.Singleton import Singleton
 
 

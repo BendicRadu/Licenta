@@ -8,7 +8,7 @@ class ImageLoader:
     def __init__(self):
 
         self.image_map = {}
-        self.PATH = "C:\\Licenta\\Licenta\\resources\\Sprites\\"
+        self.PATH = "C:\\Users\\STEFI\\PycharmProjects\\Licenta\\resources\\Sprites\\"
 
     def load(self, tile_code):
 
