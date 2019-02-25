@@ -50,6 +50,8 @@ class RenderMap:
 
         cam_x, cam_y = self.camera.mock_move(direction)
 
+        # TODO Refactor
+
         tile_top_left = self.screen_map.get_tile_from_screen(
             Constants.PLAYER_SCREEN_X,
             Constants.PLAYER_SCREEN_Y,
@@ -105,28 +107,28 @@ class RenderMap:
 
         # Check if the top and bottom corners collide (Since the tile starts from top-left)
 
-        if int(tile_top_left.tile_code) in Constants.TILES_WITH_COLLIDERS:
+        if tile_top_left.tile_code in Constants.TILES_WITH_COLLIDERS:
             if player_rect_top_left.colliderect(tile_rect_top_left) \
                     or player_rect_bottom_right.colliderect(tile_rect_top_left) \
                     or player_rect_top_right.collidedict(tile_rect_top_left) \
                     or player_rect_top_left.collidedict(tile_rect_top_left):
                 return False
 
-        if int(tile_bottom_right.tile_code) in Constants.TILES_WITH_COLLIDERS:
+        if tile_bottom_right.tile_code in Constants.TILES_WITH_COLLIDERS:
             if player_rect_bottom_right.colliderect(tile_rect_bottom_right) \
                     or player_rect_bottom_right.colliderect(tile_rect_bottom_right) \
                     or player_rect_top_right.collidedict(tile_rect_bottom_right) \
                     or player_rect_top_left.collidedict(tile_rect_bottom_right):
                 return False
 
-        if int(tile_top_right.tile_code) in Constants.TILES_WITH_COLLIDERS:
+        if tile_top_right.tile_code in Constants.TILES_WITH_COLLIDERS:
             if player_rect_top_left.colliderect(tile_rect_top_right) \
                     or player_rect_bottom_right.colliderect(tile_rect_top_right) \
                     or player_rect_top_right.collidedict(tile_rect_top_right) \
                     or player_rect_top_left.collidedict(tile_rect_top_right):
                 return False
 
-        if int(tile_bottom_left.tile_code) in Constants.TILES_WITH_COLLIDERS:
+        if tile_bottom_left.tile_code in Constants.TILES_WITH_COLLIDERS:
             if player_rect_top_left.colliderect(tile_rect_bottom_left) \
                     or player_rect_bottom_right.colliderect(tile_rect_bottom_left) \
                     or player_rect_top_right.collidedict(tile_rect_bottom_left) \
@@ -154,6 +156,72 @@ class RenderMap:
 
         return SelectedTile(x, y, tile.tile_code)
 
+    def get_move_list_to_tile(self, mouse_pos_raw):
+
+        mouse_pos_x = mouse_pos_raw[0] + self.camera.offset_x
+        mouse_pos_y = mouse_pos_raw[1] + self.camera.offset_y
+
+        tile_list = self.screen_map.get_tile_list((mouse_pos_x, mouse_pos_y), self.camera)
+
+        if tile_list is None:
+            return []
+
+        print(tile_list)
+
+        move_list = self.get_move_to_center_moves()
+
+        for i in range(len(tile_list) - 1):
+            move_list += self.get_neighbour_moves(tile_list[i], tile_list[i + 1])
+
+        return move_list
+
+    def get_neighbour_moves(self, tile_1, tile_2):
+
+        base_direction = (
+            (tile_2[1] - tile_1[1]) * Constants.PLAYER_SPEED,
+            (tile_2[0] - tile_1[0]) * Constants.PLAYER_SPEED
+        )
+
+        repeat = Constants.TILE_SIZE // Constants.PLAYER_SPEED
+
+        moves = []
+
+        while repeat:
+
+            moves.append(base_direction)
+            repeat -= 1
+
+        return moves
+
+    def get_move_to_center_moves(self):
+
+        moves = []
+
+        tile_center = Constants.TILE_SIZE // 2
+
+        tile_min = tile_center - Constants.PLAYER_SPEED // 2
+        tile_max = tile_center + Constants.PLAYER_SPEED // 2
+
+        cam_x = self.camera.offset_x
+        cam_y = self.camera.offset_y
+
+        while tile_min > cam_x:
+            cam_x += Constants.PLAYER_SPEED
+            moves.append((Constants.PLAYER_SPEED, 0))
+
+        while tile_max < cam_x:
+            cam_x -= Constants.PLAYER_SPEED
+            moves.append((-Constants.PLAYER_SPEED, 0))
+
+        while tile_min > cam_y:
+            cam_y += Constants.PLAYER_SPEED
+            moves.append((0, Constants.PLAYER_SPEED))
+
+        while tile_max < cam_y:
+            cam_y -= Constants.PLAYER_SPEED
+            moves.append((0, -Constants.PLAYER_SPEED))
+
+        return moves
 
 class Camera:
 

@@ -9,8 +9,8 @@ PLAYER_SIZE = 20
 TILE_SIZE = 50
 
 # Playable area
-GAME_SCREEN_WIDTH = 800
-GAME_SCREEN_HEIGHT = 600
+GAME_SCREEN_WIDTH = 1500
+GAME_SCREEN_HEIGHT = 1000
 
 # Whole game window (With UI)
 SCREEN_WIDTH = 1900
@@ -43,11 +43,19 @@ CHUNK_MIDDLE_OFFSET_J = 50
 MIDDLE_SCREEN_I = HEIGHT_NO_OF_TILES // 2 // TILE_SIZE
 MIDDLE_SCREEN_J = WIDTH_NO_OF_TILES // 2 // TILE_SIZE
 
+
 class TileCode(Enum):
-    GRASS = 0,
-    ROCK = 1,
+    GRASS = 0
+    ROCK = 1
     TREE = 2
 
 
-TILES_WITH_COLLIDERS = [1, 2]
+class Direction(Enum):
+    DOWN  = 0
+    UP    = 1
+    LEFT  = 2
+    RIGHT = 3
+
+
+TILES_WITH_COLLIDERS = ['1', '2']
 

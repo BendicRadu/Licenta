@@ -21,7 +21,9 @@ class Chunk:
 
     def is_chunk_generated(self):
 
-        file_path = "C:\\Users\\STEFI\\PycharmProjects\\Licenta\\resources\\WorldMap" \
+        # TODO Change to constant path
+
+        file_path = "C:\\Licenta\\Licenta\\resources\\WorldMap\\" \
                     + str(self.offset_i) + "-" + str(self.offset_j) + "-chunk.txt"
 
         try:
@@ -33,7 +35,7 @@ class Chunk:
 
     def load_chunk(self):
 
-        file_path = "C:\\Users\\STEFI\\PycharmProjects\\Licenta\\resources\\WorldMap" \
+        file_path = "C:\\Licenta\\Licenta\\resources\\WorldMap\\" \
                     + str(self.offset_i) + "-" + str(self.offset_j) + "-chunk.txt"
 
         with open(file_path, "r") as file:
@@ -50,7 +52,7 @@ class Chunk:
                 random_index = random.randint(0, len(Constants.SPAWN_CHANCE_LIST) - 1)
                 object_type = Constants.SPAWN_CHANCE_LIST[random_index]
 
-                matrix_row.append(object_type)
+                matrix_row.append(str(object_type))
 
             self.matrix.append(matrix_row)
 
@@ -58,7 +60,7 @@ class Chunk:
 
     def save_chunk(self):
 
-        file_path = "C:\\Users\\STEFI\\PycharmProjects\\Licenta\\resources\\WorldMap"
+        file_path = "C:\\Licenta\\Licenta\\resources\\WorldMap\\"
         file_path += str(self.offset_i) + "-" + str(self.offset_j) + "-chunk.txt"
 
         file = open(file_path, "w+", newline='')
