@@ -144,29 +144,53 @@ class RenderMap:
 
         return pygame.Rect(x, y, Constants.TILE_SIZE, Constants.TILE_SIZE)
 
-    def get_selected_tile(self, mouse_pos_raw):
 
-        mouse_pos_x = mouse_pos_raw[0] + self.camera.offset_x
-        mouse_pos_y = mouse_pos_raw[1] + self.camera.offset_y
+    def unapply_camera(self, pos):
+        x = pos[0] + self.camera.offset_x
+        y = pos[1] + self.camera.offset_y
+        return x, y
 
-        tile = self.screen_map.get_selected_tile((mouse_pos_x, mouse_pos_y))
+
+    def get_selected_tile_sprite(self, mouse_pos_raw):
+
+        mouse_pos = self.unapply_camera(mouse_pos_raw)
+        tile = self.screen_map.get_selected_tile(mouse_pos)
 
         x = tile.j * Constants.TILE_SIZE - self.camera.offset_x
         y = tile.i * Constants.TILE_SIZE - self.camera.offset_y
 
         return SelectedTile(x, y, tile.tile_code)
 
+
+    def get_selected_tile(self, mouse_pos_raw):
+        mouse_pos = self.unapply_camera(mouse_pos_raw)
+        return self.screen_map.get_selected_tile(mouse_pos)
+
+
+    def get_tile_under_player(self):
+        player_pos = self.unapply_camera((Constants.GAME_SCREEN_CENTER_X, Constants.GAME_SCREEN_CENTER_Y))
+        return self.screen_map.get_selected_tile(player_pos)
+
+
+    def remove_selected_tile(self, mouse_pos_raw):
+        mouse_pos = self.unapply_camera(mouse_pos_raw)
+        self.screen_map.update_selected_tile(mouse_pos, Constants.TileCode.GRASS.value)
+
+
+    def place_on_selected_tile(self, mouse_pos_raw, tile_code):
+        mouse_pos = self.unapply_camera(mouse_pos_raw)
+        self.screen_map.update_selected_tile(mouse_pos, tile_code)
+
+
     def get_move_list_to_tile(self, mouse_pos_raw):
 
-        mouse_pos_x = mouse_pos_raw[0] + self.camera.offset_x
-        mouse_pos_y = mouse_pos_raw[1] + self.camera.offset_y
+        mouse_pos = self.unapply_camera(mouse_pos_raw)
 
-        tile_list = self.screen_map.get_tile_list((mouse_pos_x, mouse_pos_y), self.camera)
+        tile_list = self.screen_map.get_tile_list(mouse_pos, self.camera)
 
         if tile_list is None:
             return []
 
-        print(tile_list)
 
         move_list = self.get_move_to_center_moves()
 

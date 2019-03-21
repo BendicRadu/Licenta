@@ -35,6 +35,14 @@ class WorldMap:
 
         return self.chunk_map[chunk_offset].get_tile(chunk_pos)
 
-    def clear_unused_chunks(self):
+    def update_tile(self, i, j, tile_code):
+
+        chunk_offset = self.get_chunk_offset(i, j)
+        chunk_pos = self.get_chunk_pos(i, j)
+
+        self.chunk_map[chunk_offset].update_tile(chunk_pos, tile_code)
+
+
+def clear_unused_chunks(self):
         # TODO
         pass

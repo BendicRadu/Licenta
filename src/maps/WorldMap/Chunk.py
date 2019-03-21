@@ -63,11 +63,16 @@ class Chunk:
         file_path = "C:\\Licenta\\Licenta\\resources\\WorldMap\\"
         file_path += str(self.offset_i) + "-" + str(self.offset_j) + "-chunk.txt"
 
-        file = open(file_path, "w+", newline='')
+        file = open(file_path, "w", newline='')
 
         for row in self.matrix:
             wr = csv.writer(file)
             wr.writerow(row)
+
+
+    def update_tile(self, pos_tuple, tile_code):
+        self.matrix[pos_tuple[0]][pos_tuple[1]] = tile_code
+        self.save_chunk()
 
     def get_tile(self, pos_tuple):
         return self.matrix[pos_tuple[0]][pos_tuple[1]]

@@ -1,3 +1,5 @@
+import time
+
 from maps.WorldMap.WorldMap import WorldMap
 from sprites.Tile import Tile
 from util import Constants
@@ -22,7 +24,7 @@ class ScreenMap:
         return self.matrix
 
     # Get global i and j for the PLAYER
-    def get_global_i_j(self, offset_i = 0, offset_j = 0):
+    def get_player_global_i_j(self, offset_i = 0, offset_j = 0):
 
         chunk_i = self.current_chunk_offset[0]
         chunk_j = self.current_chunk_offset[1]
@@ -49,12 +51,12 @@ class ScreenMap:
         row_size    = Constants.WIDTH_NO_OF_TILES
         column_size = Constants.HEIGHT_NO_OF_TILES
 
-        base_i, base_j = self.get_global_i_j(-Constants.HEIGHT_NO_OF_TILES // 2, -Constants.WIDTH_NO_OF_TILES // 2)
+        base_global_i, base_global_j = self.get_player_global_i_j(-Constants.HEIGHT_NO_OF_TILES // 2, -Constants.WIDTH_NO_OF_TILES // 2)
 
         for i in range(column_size):
             for j in range(row_size):
 
-                tile = self.world_map.get_tile(base_i + i, base_j + j)
+                tile = self.world_map.get_tile(base_global_i + i, base_global_j + j)
                 self.matrix.add_tile(i, j, tile)
 
 
@@ -68,7 +70,6 @@ class ScreenMap:
 
         end_tile = self.get_selected_tile(mouse_pos)
 
-        print(end_tile.tile_code)
 
         if end_tile.tile_code in Constants.TILES_WITH_COLLIDERS:
             return
@@ -86,7 +87,7 @@ class ScreenMap:
         mouse_i = mouse_pos[1] // Constants.TILE_SIZE
         mouse_j = mouse_pos[0] // Constants.TILE_SIZE
 
-        global_i, global_j = self.get_global_i_j(-Constants.HEIGHT_NO_OF_TILES // 2, -Constants.WIDTH_NO_OF_TILES // 2)
+        global_i, global_j = self.get_player_global_i_j(-Constants.HEIGHT_NO_OF_TILES // 2, -Constants.WIDTH_NO_OF_TILES // 2)
 
         global_mouse_i = global_i + mouse_i
         global_mouse_j = global_j + mouse_j
@@ -94,6 +95,20 @@ class ScreenMap:
         tile_code = self.world_map.get_tile(global_mouse_i, global_mouse_j)
 
         return Tile(mouse_i, mouse_j, tile_code)
+
+    def update_selected_tile(self, mouse_pos, tile_code):
+
+        mouse_i = mouse_pos[1] // Constants.TILE_SIZE
+        mouse_j = mouse_pos[0] // Constants.TILE_SIZE
+
+        global_i, global_j = self.get_player_global_i_j(-Constants.HEIGHT_NO_OF_TILES // 2,
+                                                        -Constants.WIDTH_NO_OF_TILES // 2)
+
+        global_mouse_i = global_i + mouse_i
+        global_mouse_j = global_j + mouse_j
+
+        self.world_map.update_tile(global_mouse_i, global_mouse_j, tile_code)
+        self.update_tiles()
 
     # Returns True if the player was moved
     #         False if the player was not moved
@@ -129,6 +144,7 @@ class ScreenMap:
         )
 
 
+
 class ScreenMapMatrix:
 
     def __init__(self):
@@ -155,6 +171,8 @@ class ScreenMapMatrix:
     def a_start(self, start_ij, end_ij):
 
         """Returns a list of tuples as a path from the given start to the given end in the given maze"""
+
+        start_time_millis = int(round(time.time() * 1000))
 
         # Create start and end node
         start_node = Node(None, start_ij)
@@ -235,6 +253,12 @@ class ScreenMapMatrix:
 
                 # Add the child to the open list
                 open_list.append(child)
+
+            current_millis = int(round(time.time() * 1000))
+
+            if current_millis > start_time_millis + 200:
+                return None
+
 
 
 class Node():
