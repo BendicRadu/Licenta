@@ -314,14 +314,11 @@ class MainLoop:
 
     def draw_required_items_border(self):
 
-        if Constants.REQUIRED_ITEMS_RECT.collidepoint(pygame.mouse.get_pos()):
+        color = (0, 0, 0)
 
+        if Constants.REQUIRED_ITEMS_RECT.collidepoint(pygame.mouse.get_pos()):
             if self.render_crafting.can_craft_selected():
                 color = (0, 255, 0)
-            else:
-                color = (255, 0, 0)
-        else:
-            color = (50, 50, 50)
 
         pygame.draw.rect(self.screen, color, Constants.REQUIRED_ITEMS_RECT, 1)
 

@@ -34,6 +34,10 @@ class RenderCrafting:
         return self.crafting.craft()
 
     def can_craft_selected(self):
+
+        if self.get_selected() is None:
+            return False
+
         return self.crafting.can_craft()
 
     def select_item(self, mouse_pos):
