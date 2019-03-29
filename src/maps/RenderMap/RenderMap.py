@@ -59,45 +59,27 @@ class RenderMap:
         )
 
         tile_top_right = self.screen_map.get_tile_from_screen(
-            Constants.PLAYER_SCREEN_X + Constants.PLAYER_SIZE // 2,
+            Constants.PLAYER_SCREEN_X + Constants.PLAYER_SIZE,
             Constants.PLAYER_SCREEN_Y,
             cam_x, cam_y
         )
 
         tile_bottom_left = self.screen_map.get_tile_from_screen(
             Constants.PLAYER_SCREEN_X,
-            Constants.PLAYER_SCREEN_Y + Constants.PLAYER_SIZE // 2,
+            Constants.PLAYER_SCREEN_Y + Constants.PLAYER_SIZE,
             cam_x, cam_y
         )
 
         tile_bottom_right = self.screen_map.get_tile_from_screen(
-            Constants.PLAYER_SCREEN_X + Constants.PLAYER_SIZE // 2,
-            Constants.PLAYER_SCREEN_Y + Constants.PLAYER_SIZE // 2,
+            Constants.PLAYER_SCREEN_X + Constants.PLAYER_SIZE,
+            Constants.PLAYER_SCREEN_Y + Constants.PLAYER_SIZE,
             cam_x, cam_y
         )
 
-        player_rect_top_left = pygame.Rect(
+        player_rect = pygame.Rect(
             Constants.PLAYER_SCREEN_X,
             Constants.PLAYER_SCREEN_Y,
             Constants.PLAYER_SIZE, Constants.PLAYER_SIZE
-        )
-
-        player_rect_bottom_right = pygame.Rect(
-            Constants.PLAYER_SCREEN_X + Constants.PLAYER_SIZE // 2,
-            Constants.PLAYER_SCREEN_Y + Constants.PLAYER_SIZE // 2,
-            10, 10
-        )
-
-        player_rect_top_right = pygame.Rect(
-            Constants.PLAYER_SCREEN_X + Constants.PLAYER_SIZE // 2,
-            Constants.PLAYER_SCREEN_Y,
-            Constants.PLAYER_SIZE, Constants.PLAYER_SIZE
-        )
-
-        player_rect_bottom_left = pygame.Rect(
-            Constants.PLAYER_SCREEN_X + Constants.PLAYER_SIZE,
-            Constants.PLAYER_SCREEN_Y + Constants.PLAYER_SIZE // 2,
-            10, 10
         )
 
         tile_rect_top_left = self.to_rect(tile_top_left, cam_x, cam_y)
@@ -108,31 +90,20 @@ class RenderMap:
         # Check if the top and bottom corners collide (Since the tile starts from top-left)
 
         if tile_top_left.tile_code in Constants.TILES_WITH_COLLIDERS:
-            if player_rect_top_left.colliderect(tile_rect_top_left) \
-                    or player_rect_bottom_right.colliderect(tile_rect_top_left) \
-                    or player_rect_top_right.collidedict(tile_rect_top_left) \
-                    or player_rect_top_left.collidedict(tile_rect_top_left):
+            if player_rect.colliderect(tile_rect_top_left):
                 return False
 
         if tile_bottom_right.tile_code in Constants.TILES_WITH_COLLIDERS:
-            if player_rect_bottom_right.colliderect(tile_rect_bottom_right) \
-                    or player_rect_bottom_right.colliderect(tile_rect_bottom_right) \
-                    or player_rect_top_right.collidedict(tile_rect_bottom_right) \
-                    or player_rect_top_left.collidedict(tile_rect_bottom_right):
+            if player_rect.colliderect(tile_rect_bottom_right):
                 return False
 
+
         if tile_top_right.tile_code in Constants.TILES_WITH_COLLIDERS:
-            if player_rect_top_left.colliderect(tile_rect_top_right) \
-                    or player_rect_bottom_right.colliderect(tile_rect_top_right) \
-                    or player_rect_top_right.collidedict(tile_rect_top_right) \
-                    or player_rect_top_left.collidedict(tile_rect_top_right):
+            if player_rect.colliderect(tile_rect_top_right):
                 return False
 
         if tile_bottom_left.tile_code in Constants.TILES_WITH_COLLIDERS:
-            if player_rect_top_left.colliderect(tile_rect_bottom_left) \
-                    or player_rect_bottom_right.colliderect(tile_rect_bottom_left) \
-                    or player_rect_top_right.collidedict(tile_rect_bottom_left) \
-                    or player_rect_top_left.collidedict(tile_rect_bottom_left):
+            if player_rect.colliderect(tile_rect_bottom_left):
                 return False
 
         return True
@@ -221,20 +192,25 @@ class RenderMap:
 
         moves = []
 
+        player_pos_raw = self.unapply_camera((Constants.GAME_SCREEN_CENTER_X, Constants.GAME_SCREEN_CENTER_Y))
+
+        # player position inside the tile
+        cam_x = player_pos_raw[0] % Constants.TILE_SIZE
+        cam_y = player_pos_raw[1] % Constants.TILE_SIZE
+
         tile_center = Constants.TILE_SIZE // 2
 
         tile_min = tile_center - Constants.PLAYER_SPEED // 2
         tile_max = tile_center + Constants.PLAYER_SPEED // 2
 
-        cam_x = self.camera.offset_x
-        cam_y = self.camera.offset_y
-
         while tile_min > cam_x:
             cam_x += Constants.PLAYER_SPEED
+            cam_x %= Constants.TILE_SIZE
             moves.append((Constants.PLAYER_SPEED, 0))
 
         while tile_max < cam_x:
             cam_x -= Constants.PLAYER_SPEED
+            cam_x %= Constants.TILE_SIZE
             moves.append((-Constants.PLAYER_SPEED, 0))
 
         while tile_min > cam_y:

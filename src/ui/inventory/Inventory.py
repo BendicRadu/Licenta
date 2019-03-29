@@ -29,6 +29,8 @@ class Inventory:
         self.inventory_matrix.selected_pos = pos
         return pos
 
+    def get_item(self, pos):
+        return self.inventory_matrix[pos]
 
     def take_one(self):
         return self.inventory_matrix.take_one(self.selected_pos)
@@ -54,9 +56,9 @@ class Inventory:
 
     def split_end(self, end_pos):
 
-        is_added = self.inventory_matrix.add_item(self.__split_virtual_item, end_pos)
+        added_pos = self.inventory_matrix.add_item(self.__split_virtual_item, end_pos)
 
-        if is_added:
+        if added_pos is not None:
             self.inventory_matrix.split_finish(self.__split_start_pos)
         else:
             self.inventory_matrix.split_cancel(self.__split_start_pos)
@@ -147,13 +149,13 @@ class InventoryMatrix:
 
         if self[pos].is_empty_cell():
             self[pos] = item
-            return True
+            return pos
 
         elif self[pos].tile_code == item.tile_code:
             self[pos].combine(item)
-            return True
+            return pos
 
-        return False
+        return None
 
     def remove(self, quantity, pos):
         return self[pos].remove(quantity)

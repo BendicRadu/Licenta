@@ -3,15 +3,21 @@ from enum import Enum
 # -----------------------SIZES----------------------------------------
 
 # WIDTH = HEIGHT = *_SIZE
+from numpy.random.mtrand import randint
 from pygame.rect import Rect
 
+from ui.crafting.CraftingItem import CraftingItem
+
 CHUNK_SIZE = 100
-PLAYER_SIZE = 20
-TILE_SIZE = 50
+PLAYER_SIZE = 23
+TILE_SIZE = 55
 
 # Playable area
 GAME_SCREEN_WIDTH = 1400
 GAME_SCREEN_HEIGHT = 1080
+
+GAME_SCREEN_WIDTH_COPY = 1400
+GAME_SCREEN_HEIGHT_COPY = 1080
 
 GAME_SCREEN_RECT = Rect(0, 0, GAME_SCREEN_WIDTH, GAME_SCREEN_HEIGHT)
 
@@ -28,7 +34,7 @@ UI_HEIGHT = SCREEN_HEIGHT
 
 # -----------------------GAME-STATS------------------------------------
 
-PLAYER_SPEED = 10
+PLAYER_SPEED = 3
 
 PLAYER_SCREEN_X = int(GAME_SCREEN_WIDTH / 2 - PLAYER_SIZE / 2)
 PLAYER_SCREEN_Y = int(GAME_SCREEN_HEIGHT / 2 - PLAYER_SIZE / 2)
@@ -46,7 +52,10 @@ HEIGHT_NO_OF_TILES = GAME_SCREEN_HEIGHT // TILE_SIZE + 2
 # Trees, rocks, etc. to be placed on the map
 
 # When generating the chunk, a random index is chosen
-SPAWN_CHANCE_LIST = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 2]
+SPAWN_CHANCE_LIST = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                     1,
+                     2, 2]
 
 CHUNK_MIDDLE_OFFSET_I = 50
 CHUNK_MIDDLE_OFFSET_J = 50
@@ -59,6 +68,7 @@ class TileCode(Enum):
     GRASS = '0'
     ROCK  = '1'
     TREE  = '2'
+    WATER = '4'
 
     @staticmethod
     def get_description(value):
@@ -71,7 +81,8 @@ class TileCode(Enum):
             return "Some rocks"
         elif value == 2:
             return "A tree"
-
+        elif value == 4:
+            return "Water"
 
 class Direction(Enum):
     DOWN  = 0
@@ -80,20 +91,20 @@ class Direction(Enum):
     RIGHT = 3
 
 
-TILES_WITH_COLLIDERS = ['1', '2']
+TILES_WITH_COLLIDERS = ['1', '2', '4']
 TILES_BUILDABLE = ['0']
-
+TILES_BREAKABLE = ['1', '2']
 
 # INVENTORY --------------------------------------
 
 INVENTORY_CELL_SIZE = 80
 
 # (x, y)
-INVENTORY_TOP_LEFT = (GAME_SCREEN_WIDTH + 23, 560)
-INVENTORY_BOT_LEFT = (GAME_SCREEN_WIDTH + 35, 1063)
+INVENTORY_TOP_LEFT = (GAME_SCREEN_WIDTH + 20, 580)
+INVENTORY_BOT_LEFT = (GAME_SCREEN_WIDTH + 20, 1080)
 
-INVENTORY_TOP_RIGHT = (GAME_SCREEN_WIDTH + 520, 560)
-INVENTORY_BOT_RIGHT = (GAME_SCREEN_WIDTH + 485, 1063)
+INVENTORY_TOP_RIGHT = (GAME_SCREEN_WIDTH + 500, 580)
+INVENTORY_BOT_RIGHT = (GAME_SCREEN_WIDTH + 500, 1080)
 
 INVENTORY_SCREEN_WIDTH  = INVENTORY_TOP_RIGHT[0] - INVENTORY_TOP_LEFT[0]
 INVENTORY_SCREEN_HEIGHT = INVENTORY_BOT_LEFT[1] - INVENTORY_TOP_LEFT[1]
@@ -105,15 +116,17 @@ INVENTORY_RECT = Rect(INVENTORY_TOP_LEFT[0], INVENTORY_TOP_LEFT[1], INVENTORY_SC
 
 ITEM_STACK_SIZE = 5
 
+INVENTORY_TEXT_TOP_LEFT = (GAME_SCREEN_WIDTH + 20, 558)
+
 # CRAFTING -----------------------------------------------------
 
-CRAFTING_CELL_SIZE = 50
+CRAFTING_CELL_SIZE = 80
 
-CRAFTING_TOP_LEFT = (GAME_SCREEN_WIDTH + 35, 20)
-CRAFTING_BOT_LEFT = (GAME_SCREEN_WIDTH + 35, 441)
+CRAFTING_TOP_LEFT = (GAME_SCREEN_WIDTH + 20, 30)
+CRAFTING_BOT_LEFT = (GAME_SCREEN_WIDTH + 20, 430)
 
-CRAFTING_TOP_RIGHT = (GAME_SCREEN_WIDTH + 485, 20)
-CRAFTING_BOT_RIGHT = (GAME_SCREEN_WIDTH + 485, 441)
+CRAFTING_TOP_RIGHT = (GAME_SCREEN_WIDTH + 500, 30)
+CRAFTING_BOT_RIGHT = (GAME_SCREEN_WIDTH + 500, 430)
 
 CRAFTING_SCREEN_WIDTH  = CRAFTING_TOP_RIGHT[0] - CRAFTING_TOP_LEFT[0]
 CRAFTING_SCREEN_HEIGHT = CRAFTING_BOT_LEFT[1]  - CRAFTING_TOP_LEFT[1]
@@ -124,22 +137,95 @@ CRAFTING_MATRIX_HEIGHT = CRAFTING_SCREEN_HEIGHT // CRAFTING_CELL_SIZE
 
 CRAFTING_RECT = Rect(CRAFTING_TOP_LEFT[0], CRAFTING_TOP_LEFT[1], CRAFTING_SCREEN_WIDTH, CRAFTING_SCREEN_HEIGHT)
 
+CRAFTING_TEXT_TOP_LEFT = (GAME_SCREEN_WIDTH + 20, 8)
+
 
 # TOOLS --------------------------------------------------
 
-TOOLS_CELL_WIDTH  = 50
-TOOLS_CELL_HEIGHT = 82
+REQUIRED_ITEMS_CELL_SIZE = 80
+
+REQUIRED_ITEMS_TOP_LEFT = (GAME_SCREEN_WIDTH + 20, 465)
+REQUIRED_ITEMS_BOT_LEFT = (GAME_SCREEN_WIDTH + 20, 545)
+
+REQUIRED_ITEMS_TOP_RIGHT = (GAME_SCREEN_WIDTH + 500, 465)
+REQUIRED_ITEMS_BOT_RIGHT = (GAME_SCREEN_WIDTH + 500, 545)
+
+REQUIRED_ITEMS_SCREEN_WIDTH  = REQUIRED_ITEMS_TOP_RIGHT[0] - REQUIRED_ITEMS_TOP_LEFT[0]
+REQUIRED_ITEMS_SCREEN_HEIGHT = REQUIRED_ITEMS_BOT_LEFT[1]  - REQUIRED_ITEMS_TOP_LEFT[1]
+
+REQUIRED_ITEMS_WIDTH  = REQUIRED_ITEMS_SCREEN_WIDTH  // REQUIRED_ITEMS_SCREEN_HEIGHT
+
+REQUIRED_ITEMS_RECT = Rect(REQUIRED_ITEMS_TOP_LEFT[0], REQUIRED_ITEMS_TOP_LEFT[1],
+                           REQUIRED_ITEMS_SCREEN_WIDTH, REQUIRED_ITEMS_SCREEN_HEIGHT)
+
+REQUIRED_ITEMS_LIST_WIDTH = REQUIRED_ITEMS_WIDTH  // REQUIRED_ITEMS_CELL_SIZE
+
+REQUIRED_ITEMS_TEXT_TOP_LEFT = (GAME_SCREEN_WIDTH + 20, 442)
 
 
-TOOLS_TOP_LEFT = (GAME_SCREEN_WIDTH + 35, 460)
-TOOLS_BOT_LEFT = (GAME_SCREEN_WIDTH + 35, 547)
+def get_tile_code_from_perlin(perlin_value):
 
-TOOLS_TOP_RIGHT = (GAME_SCREEN_WIDTH + 485, 460)
-TOOLS_BOT_RIGHT = (GAME_SCREEN_WIDTH + 485, 547)
+    k = perlin_value
 
-TOOLS_SCREEN_WIDTH  = TOOLS_TOP_RIGHT[0] - TOOLS_TOP_LEFT[0]
-TOOLS_SCREEN_HEIGHT = TOOLS_BOT_LEFT[1]  - TOOLS_TOP_LEFT[1]
+    if k < 260:
+        object_type = TileCode.WATER.value
 
-TOOLS_WIDTH  = TOOLS_SCREEN_WIDTH  // TOOLS_CELL_WIDTH
+    elif 260 <= k < 270:
+        object_type = TileCode.TREE.value
 
-TOOLS_RECT = Rect(TOOLS_TOP_LEFT[0], TOOLS_TOP_LEFT[1], TOOLS_SCREEN_WIDTH, TOOLS_SCREEN_HEIGHT)
+    elif 270 <= k < 520:
+        object_type = SPAWN_CHANCE_LIST[randint(0, len(SPAWN_CHANCE_LIST))]
+
+    elif 520 <= k < 700:
+        object_type = TileCode.TREE.value
+
+    else:
+        object_type = TileCode.ROCK.value
+
+
+    return object_type
+
+
+def get_tile_code_for_buffer():
+    i = randint(0, len(SPAWN_CHANCE_LIST))
+    return str(SPAWN_CHANCE_LIST[i])
+
+
+
+
+def spawn_tile():
+    return SPAWN_CHANCE_LIST[randint(0, len(SPAWN_CHANCE_LIST))]
+
+
+
+class CraftingItems(Enum):
+
+    WOOD_FLOOR = CraftingItem(
+
+        # TODO Change to appropriate tile code
+
+        TileCode.TREE.value,
+        {
+            TileCode.TREE.value: 1
+        }
+    )
+
+    ROCK_FLOOR = CraftingItem(
+
+        # TODO here too
+
+        TileCode.ROCK.value,
+        {
+            TileCode.ROCK.value: 1
+        }
+    )
+
+    # TODO Remove this :)
+    MAGIC_TILE = CraftingItem(
+
+        TileCode.WATER.value,
+        {
+            TileCode.TREE.value: 2,
+            TileCode.ROCK.value: 2
+        }
+    )

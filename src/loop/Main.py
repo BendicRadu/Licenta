@@ -1,10 +1,10 @@
 import pygame
 
+from manager.CraftingManager import CraftingManager
 from manager.WorldChangeManager import WorldChangeManager
 from maps.RenderMap.RenderMap import RenderMap
 from ui.crafting.RenderCrafting import RenderCrafting
 from ui.inventory.RenderInventory import RenderInventory
-from ui.tools.RenderToolBox import RenderToolbox
 from util import Constants
 from util.Singleton import Singleton
 
@@ -15,10 +15,10 @@ class MainLoop:
 
         self.render_map       = RenderMap()
         self.render_inventory = RenderInventory()
-        self.render_tools     = RenderToolbox()
         self.render_crafting  = RenderCrafting()
 
         self.world_change_manager = WorldChangeManager(self.render_map, self.render_inventory)
+        self.crafting_manager     = CraftingManager(self.render_crafting, self.render_inventory)
 
         # List of automatic player moves
         self.player_move_list = []
@@ -27,8 +27,11 @@ class MainLoop:
 
         self.screen = pygame.display.set_mode(
             (Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT),
-            pygame.FULLSCREEN
+            pygame.FULLSCREEN | pygame.DOUBLEBUF
         )
+
+        self.screen.set_alpha(None)
+
 
         self.game_screen = pygame.Surface(
             (Constants.GAME_SCREEN_WIDTH, Constants.GAME_SCREEN_HEIGHT)
@@ -41,9 +44,13 @@ class MainLoop:
         Singleton.imageLoader.pygame_init()
 
         self.font = pygame.font.SysFont('arial', 30)
-        self.inventory_font = pygame.font.SysFont('arial', 15)
+        self.ui_font = pygame.font.SysFont('arial', 15)
+        self.ui_font.set_bold(True)
 
         self.selected_inventory_pos = None
+        self.selected_crafting_pos  = None
+
+        self.show_inventory = True
 
     def run(self):
 
@@ -54,22 +61,32 @@ class MainLoop:
         right_pressed = False
         left_pressed = False
 
-        self.draw_ui()
+        #self.draw_ui()
+        self.draw_initial_inventory()
+        self.draw_initial_crafting()
+        self.draw_initial_required_items()
 
         while not game_over:
+
+            mouse_pos = pygame.mouse.get_pos()
+
 
             self.draw_tile_sprites()
             self.draw_selected_tile()
             self.draw_player()
             self.draw_game_screen()
 
-            self.draw_inventory()
-            self.draw_tools()
             self.draw_crafting()
 
-            self.draw_selected_inventory_item()
+            self.draw_required_items()
+            self.draw_required_items_border()
+
+            self.update_inventory()
 
             self.auto_move_player()
+
+            self.draw_selected_inventory_item()
+            self.draw_selected_crafting_item()
 
             for event in pygame.event.get():
 
@@ -121,12 +138,12 @@ class MainLoop:
                     elif Constants.INVENTORY_RECT.collidepoint(mouse_pos):
                         self.selected_inventory_pos = self.render_inventory.select_item(mouse_pos)
 
-
                     elif Constants.CRAFTING_RECT.collidepoint(mouse_pos):
-                        pass
+                        self.selected_crafting_pos = self.render_crafting.select_item(mouse_pos)
 
-                    elif Constants.TOOLS_RECT.collidepoint(mouse_pos):
-                        pass
+                    elif Constants.REQUIRED_ITEMS_RECT.collidepoint(mouse_pos):
+                        self.crafting_manager.craft_selected()
+
 
             dx, dy = 0, 0
 
@@ -150,8 +167,9 @@ class MainLoop:
                 self.player_move_list = []
                 self.render_map.move_player((dx, dy))
 
+
             pygame.display.flip()
-            self.clock.tick(1000)
+            self.clock.tick(90)
 
     pygame.quit()
 
@@ -179,9 +197,22 @@ class MainLoop:
         pygame.draw.rect(self.screen, (255, 0, 0),
                          pygame.Rect(selected_cell.x, selected_cell.y,
                                      Constants.INVENTORY_CELL_SIZE, Constants.INVENTORY_CELL_SIZE),
-                         2)
+                         1)
 
+    def draw_selected_crafting_item(self):
 
+        if self.selected_crafting_pos is None:
+            return
+
+        selected_cell = self.render_crafting.get_selected_item_sprite(self.selected_crafting_pos)
+
+        if selected_cell is None:
+            return
+
+        pygame.draw.rect(self.screen, (255, 0, 0),
+                         pygame.Rect(selected_cell.x, selected_cell.y,
+                                     Constants.CRAFTING_CELL_SIZE, Constants.CRAFTING_CELL_SIZE),
+                         1)
 
     def draw_selected_tile(self):
 
@@ -208,7 +239,7 @@ class MainLoop:
 
         text = Constants.TileCode.get_description(tile_code)
 
-        text_surface = self.font.render(text, False, (0, 0, 0))
+        text_surface = self.font.render(str(self.clock.get_fps()), False, (0, 0, 0))
         self.game_screen.blit(text_surface, (10, 0))
 
     def draw_player(self):
@@ -232,7 +263,7 @@ class MainLoop:
 
         self.screen.blit(Singleton.imageLoader.ui_background, rect)
 
-    def draw_inventory(self):
+    def draw_initial_inventory(self):
 
         sprites = self.render_inventory.get_sprites()
 
@@ -241,7 +272,36 @@ class MainLoop:
 
             self.screen.blit(Singleton.imageLoader.load_inventory_image(sprite.tile_code), rect)
 
+        text_surface = self.ui_font.render("Inventory", False, (255, 255, 255))
+        self.screen.blit(text_surface, Constants.INVENTORY_TEXT_TOP_LEFT)
+
         self.__draw_quantities()
+
+    def draw_initial_crafting(self):
+        sprites = self.render_crafting.get_sprites()
+
+        for sprite in sprites:
+            rect = pygame.Rect(sprite.x, sprite.y, Constants.CRAFTING_CELL_SIZE, Constants.CRAFTING_CELL_SIZE)
+
+            self.screen.blit(Singleton.imageLoader.load_inventory_image(sprite.tile_code), rect)
+
+        text_surface = self.ui_font.render("Crafting recipes", False, (255, 255, 255))
+        self.screen.blit(text_surface, Constants.CRAFTING_TEXT_TOP_LEFT)
+
+        self.__draw_quantities()
+
+    def draw_initial_required_items(self):
+
+        sprites = self.render_crafting.get_blank_required_items()
+
+        for sprite in sprites:
+            rect = pygame.Rect(sprite.x, sprite.y, Constants.REQUIRED_ITEMS_CELL_SIZE, Constants.REQUIRED_ITEMS_CELL_SIZE)
+
+            self.screen.blit(Singleton.imageLoader.load_inventory_image(sprite.tile_code), rect)
+
+        text_surface = self.ui_font.render("Items required for crafting", False, (255, 255, 255))
+        self.screen.blit(text_surface, Constants.REQUIRED_ITEMS_TEXT_TOP_LEFT)
+
 
     def __draw_quantities(self):
 
@@ -249,32 +309,54 @@ class MainLoop:
 
         for sprite in sprites:
 
-            text_surface = self.inventory_font.render(sprite.text, False, (255, 255, 255))
+            text_surface = self.ui_font.render(sprite.text, False, (255, 255, 255))
             self.screen.blit(text_surface, (sprite.x, sprite.y))
 
+    def draw_required_items_border(self):
 
-    def draw_tools(self):
+        if Constants.REQUIRED_ITEMS_RECT.collidepoint(pygame.mouse.get_pos()):
 
-        sprites = self.render_tools.get_sprites()
+            if self.render_crafting.can_craft_selected():
+                color = (0, 255, 0)
+            else:
+                color = (255, 0, 0)
+        else:
+            color = (50, 50, 50)
+
+        pygame.draw.rect(self.screen, color, Constants.REQUIRED_ITEMS_RECT, 1)
+
+
+    def draw_required_items(self):
+
+        sprites = self.render_crafting.get_selected_required_items_sprites()
 
         for sprite in sprites:
-            rect = pygame.Rect(sprite.x, sprite.y, Constants.TOOLS_CELL_WIDTH, Constants.TOOLS_CELL_HEIGHT)
+            rect = pygame.Rect(sprite.x, sprite.y, Constants.REQUIRED_ITEMS_CELL_SIZE, Constants.REQUIRED_ITEMS_CELL_SIZE)
 
-            # TODO special sprites for tools
+            self.screen.blit(Singleton.imageLoader.load_inventory_image(sprite.tile_code), rect)
 
-            self.screen.blit(Singleton.imageLoader.load_world_image(sprite.tile_code), rect)
+        self.__draw_required_items_quantities()
+
+    def __draw_required_items_quantities(self):
+
+        sprites = self.render_crafting.get_selected_required_items_sprites_quantities()
+
+        for sprite in sprites:
+            text_surface = self.ui_font.render(sprite.text, False, (255, 255, 255))
+            self.screen.blit(text_surface, (sprite.x, sprite.y))
 
     def draw_crafting(self):
 
         sprites = self.render_crafting.get_sprites()
 
         for sprite in sprites:
-            rect = pygame.Rect(sprite.x, sprite.y, Constants.TOOLS_CELL_WIDTH, Constants.TOOLS_CELL_HEIGHT)
+            rect = pygame.Rect(sprite.x, sprite.y, Constants.CRAFTING_CELL_SIZE, Constants.CRAFTING_CELL_SIZE)
 
             # TODO special sprites for crafting
 
-            self.screen.blit(Singleton.imageLoader.load_world_image(sprite.tile_code), rect)
+            self.screen.blit(Singleton.imageLoader.load_crafting_image(sprite.tile_code), rect)
 
+    #===================================================================================================================
 
     def auto_move_player(self):
 
@@ -284,6 +366,31 @@ class MainLoop:
             direction = self.player_move_list.pop(0)
 
             self.render_map.move_player(direction)
+
+    def update_inventory(self):
+
+        update_events  = self.world_change_manager.inventory_update_events
+        update_events += self.crafting_manager.inventory_update_events
+
+        self.clear_inventory_events()
+
+        for event in update_events:
+
+            rect = pygame.Rect(event.cell_x, event.cell_y, Constants.INVENTORY_CELL_SIZE, Constants.INVENTORY_CELL_SIZE)
+            self.screen.blit(Singleton.imageLoader.load_inventory_image(event.tile_code), rect)
+
+            if event.tile_code == '-1':
+                continue
+
+            text_surface = self.ui_font.render(event.quantity, False, (255, 255, 255))
+            self.screen.blit(text_surface, (event.text_x, event.text_y))
+
+
+    #===================================================================================================================
+
+    def clear_inventory_events(self):
+        self.world_change_manager.inventory_update_events = []
+        self.crafting_manager.inventory_update_events = []
 
 
 a = MainLoop()

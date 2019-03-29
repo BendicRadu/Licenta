@@ -82,9 +82,33 @@ class RenderInventory:
         if self.get_selected_item().is_empty():
             self.remove_selected_item()
 
+        event = self.get_item_update_event(self.inventory.get_matrix().selected_pos)
+
+        return event
 
     def get_selected_item(self):
         return self.inventory.get_selected_item()
+
+    def get_item_update_event(self, pos):
+
+        i, j = pos
+
+        cell_x = j * Constants.INVENTORY_CELL_SIZE + Constants.INVENTORY_TOP_LEFT[0]
+        cell_y = i * Constants.INVENTORY_CELL_SIZE + Constants.INVENTORY_TOP_LEFT[1]
+
+        text_x = j * Constants.INVENTORY_CELL_SIZE \
+            + Constants.INVENTORY_TOP_LEFT[0] \
+            + Constants.INVENTORY_CELL_SIZE // 2 \
+            + Constants.INVENTORY_CELL_SIZE // 6
+
+        text_y = i * Constants.INVENTORY_CELL_SIZE \
+            + Constants.INVENTORY_TOP_LEFT[1] \
+            + Constants.INVENTORY_CELL_SIZE // 2 \
+            + Constants.INVENTORY_CELL_SIZE // 6
+
+        item = self.inventory.get_item(pos)
+
+        return InventoryUpdateEvent(cell_x, cell_y, text_x, text_y, item.tile_code, item.quantity)
 
     def remove_selected_item(self):
         self.inventory.remove_selected_item()
@@ -102,3 +126,20 @@ class RenderInventory:
         return self.inventory.select((i, j))
 
 
+# Holds info about the inventory cell that needs updating
+class InventoryUpdateEvent:
+
+    def __init__(self, cell_x, cell_y, text_x, text_y, tile_code, quantity):
+
+        self.cell_x = cell_x
+        self.cell_y = cell_y
+
+        self.text_x = text_x
+        self.text_y = text_y
+
+        self.quantity = str(quantity)
+
+        if self.quantity == -1:
+            self.tile_code = '-1'
+        else:
+            self.tile_code = tile_code

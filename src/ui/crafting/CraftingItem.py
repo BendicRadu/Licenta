@@ -8,3 +8,10 @@ class CraftingItem:
         self.crafting_items_required = crafting_items_required
 
 
+    @staticmethod
+    def get_empty_cell():
+        item = CraftingItem("-1", None)
+        return item
+
+    def is_empty_cell(self):
+        return self.tile_code == "-1" and self.crafting_items_required is None

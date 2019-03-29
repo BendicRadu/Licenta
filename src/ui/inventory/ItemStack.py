@@ -56,9 +56,11 @@ class Item:
     # tries to remove :quantity: items. If it can't, it returns the remaining items that need to be removed
     def remove(self, quantity):
 
-        if self.quantity < quantity:
-            self.quantity = 0
-            return quantity - self.quantity
+        if self.quantity <= quantity:
+            q = self.quantity
+            self.quantity = -1
+            self.tile_code = '-1'
+            return quantity - q
 
         self.quantity -= quantity
         return 0

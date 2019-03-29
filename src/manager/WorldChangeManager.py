@@ -12,13 +12,12 @@ class WorldChangeManager:
         self.render_map = render_map
         self.render_inventory = render_inventory
 
+        self.inventory_update_events = []
 
     def is_selected_tile_in_range_of_player(self, mouse_pos_raw):
 
         selected_tile = self.render_map.get_selected_tile(mouse_pos_raw)
         tile_under_player = self.render_map.get_tile_under_player()
-
-        print(selected_tile.i, selected_tile.j, " ", tile_under_player.i, tile_under_player.j)
 
         is_in_reach_x = abs(selected_tile.j - tile_under_player.j) <= 1
         is_in_reach_y = abs(selected_tile.i - tile_under_player.i) <= 1
@@ -37,7 +36,7 @@ class WorldChangeManager:
         if tile.tile_code in Constants.TILES_BUILDABLE:
             self.place_tile(mouse_pos_raw)
 
-        else:
+        elif tile.tile_code in Constants.TILES_BREAKABLE:
             self.break_tile(mouse_pos_raw)
 
 
@@ -49,11 +48,12 @@ class WorldChangeManager:
         if tile.tile_code in Constants.TILES_BUILDABLE:
             return
 
-        print(tile.tile_code)
-
         self.render_map.remove_selected_tile(mouse_pos_raw)
-        print(self.render_inventory.auto_add_item(tile.tile_code, 1))
+        added_pos = self.render_inventory.auto_add_item(tile.tile_code, 1)
 
+        event = self.render_inventory.get_item_update_event(added_pos)
+
+        self.inventory_update_events.append(event)
 
     def place_tile(self, mouse_pos_raw):
 
@@ -73,5 +73,8 @@ class WorldChangeManager:
             return
 
         self.render_map.place_on_selected_tile(mouse_pos_raw, item.tile_code)
-        self.render_inventory.take_one_selected_item()
+        event = self.render_inventory.take_one_selected_item()
+
+        self.inventory_update_events.append(event)
+
 

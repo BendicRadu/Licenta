@@ -1,3 +1,4 @@
+from ui.crafting.CraftingItem import CraftingItem
 from util import Constants
 from util.Singleton import Singleton
 
@@ -9,19 +10,40 @@ class Crafting:
         self.inventory = Singleton.inventory
         self.crafting_matrix = CraftingMatrix()
 
+        self.inventory_update_events = []
+
+        self.selected_pos = None
+
+
+    def select(self, pos):
+
+        if self.get_matrix()[pos].is_empty_cell():
+            self.selected_pos = None
+            return None
+
+        self.selected_pos = pos
+        return pos
+
+    def get_selected(self):
+
+        if self.selected_pos is None:
+            return None
+
+        return self.get_matrix()[self.selected_pos]
+
     def get_matrix(self):
         return self.crafting_matrix
 
-    def craft(self, pos):
+    def craft(self):
 
-        if not self.__can_craft(pos):
+        if not self.can_craft():
             return
 
-        self.__remove_items_for_crafting(pos)
+        self.__remove_items_for_crafting(self.selected_pos)
 
-        tile_code = self.crafting_matrix[pos].tile_code
+        tile_code = self.crafting_matrix[self.selected_pos].tile_code
 
-        self.inventory.auto_add(tile_code, 1)
+        return self.inventory.auto_add(tile_code, 1)
 
 
     def __remove_items_for_crafting(self, pos):
@@ -35,9 +57,9 @@ class Crafting:
 
             self.inventory.remove(tile_code, required_quantity)
 
-    def __can_craft(self, pos):
+    def can_craft(self):
 
-        item_to_craft = self.crafting_matrix[pos]
+        item_to_craft = self.crafting_matrix[self.selected_pos]
         required_items = item_to_craft.crafting_items_required
 
         for tile_code in required_items.keys():
@@ -71,10 +93,15 @@ class CraftingMatrix:
             matrix_row = []
 
             for j in range(self.width):
-                matrix_row.append("0")
+                matrix_row.append(CraftingItem.get_empty_cell())
 
             self.matrix.append(matrix_row)
 
+        # TODO remove this
+
+        self[(0, 2)] = Constants.CraftingItems.WOOD_FLOOR.value
+        self[(0, 1)] = Constants.CraftingItems.ROCK_FLOOR.value
+        self[(0, 0)] = Constants.CraftingItems.MAGIC_TILE.value
 
 
     def __getitem__(self, pos):

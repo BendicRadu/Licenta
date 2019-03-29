@@ -1,7 +1,9 @@
 import csv
 import datetime
 import random
+from threading import Thread
 
+from maps.WorldMap.PerlinNoise import banded_perlin_noise
 from util import Constants
 
 
@@ -12,12 +14,14 @@ class Chunk:
         self.offset_i = offset_i
         self.offset_j = offset_j
 
+        self.chunk_mask = ChunkMask()
+
         self.matrix = []
 
         if self.is_chunk_generated():
             self.load_chunk()
         else:
-            self.generate_chunk()
+            Thread(target = self.generate_chunk(), args=())
 
     def is_chunk_generated(self):
 
@@ -42,19 +46,40 @@ class Chunk:
             for line in file:
                 self.matrix.append(line.strip("\n").split(","))
 
+    def _init_matrix(self):
+
+        self.matrix = []
+
+        for i in range(Constants.CHUNK_SIZE):
+            row = []
+            for j in range(Constants.CHUNK_SIZE):
+                row.append(None)
+
+            self.matrix.append(row)
+
     def generate_chunk(self):
+
+        self._init_matrix()
+
+        perlin_matrix = banded_perlin_noise(Constants.CHUNK_SIZE,
+                                            Constants.CHUNK_SIZE,
+                                            [2, 4, 8, 16, 32, 64], [32, 16, 8, 4, 2, 1])
 
         for i in range(Constants.CHUNK_SIZE):
 
-            matrix_row = []
-
             for j in range(Constants.CHUNK_SIZE):
-                random_index = random.randint(0, len(Constants.SPAWN_CHANCE_LIST) - 1)
-                object_type = Constants.SPAWN_CHANCE_LIST[random_index]
 
-                matrix_row.append(str(object_type))
+                perlin_value = int(perlin_matrix[i][j] * 1000)
 
-            self.matrix.append(matrix_row)
+                object_type = Constants.get_tile_code_from_perlin(perlin_value)
+
+                # random_index = random.randint(0, len(Constants.SPAWN_CHANCE_LIST) - 1)
+                # object_type = Constants.SPAWN_CHANCE_LIST[random_index]
+
+                self.matrix[i][j] = str(object_type)
+
+
+        self.chunk_mask.apply(self.matrix)
 
         self.save_chunk()
 
@@ -76,3 +101,51 @@ class Chunk:
 
     def get_tile(self, pos_tuple):
         return self.matrix[pos_tuple[0]][pos_tuple[1]]
+
+
+class ChunkMask:
+
+    def __init__(self):
+
+        self.mask = []
+        self.init_mask()
+
+    def init_mask(self):
+
+        for i in range(Constants.CHUNK_SIZE):
+            row = []
+
+            for j in range(Constants.CHUNK_SIZE):
+
+                if self.is_point_in_circle(i, j) or self.modifier():
+                    row.append(False)
+                else:
+                    row.append(True)
+
+            self.mask.append(row)
+
+
+    # r - radius
+    # n - resolution
+    def is_point_in_circle(self, i, j):
+
+        x = j - Constants.CHUNK_SIZE // 2
+        y = Constants.CHUNK_SIZE - (i + Constants.CHUNK_SIZE // 2)
+
+        radius = Constants.CHUNK_SIZE - 10
+
+        return abs(x) + abs(y) < radius
+
+
+    def apply(self, map_matrix):
+
+
+        for i in range(Constants.CHUNK_SIZE):
+            for j in range(Constants.CHUNK_SIZE):
+
+                if self.mask[i][j]:
+                    map_matrix[i][j] = str(Constants.spawn_tile())
+
+
+    def modifier(self):
+        return random.randint(0, 1) == 0
