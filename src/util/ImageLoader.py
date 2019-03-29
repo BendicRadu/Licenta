@@ -11,9 +11,9 @@ class ImageLoader:
         self.inventory_image_map = {}
         self.crafting_image_map = {}
 
-        self.WORLD_IMAGE_PATH = "C:\\Licenta\\Licenta\\resources\\Sprites\\"
-        self.INVENTORY_IMAGE_PATH = "C:\\Licenta\\Licenta\\resources\\Sprites\\ui\\inventory\\"
-        self.CRAFTING_IMAGE_PATH = "C:\\Licenta\\Licenta\\resources\\Sprites\\ui\\crafting\\"
+        self.WORLD_IMAGE_PATH = "C:\\Licenta\\Licenta\\resources\\Sprites\\world\\"
+        self.UI_IMAGE_PATH = "C:\\Licenta\\Licenta\\resources\\Sprites\\ui\\"
+        self.PLAYER_IMAGE_PATH = "C:\\Licenta\\Licenta\\resources\\Sprites\\player\\"
 
         self.player_images = []
 
@@ -26,19 +26,19 @@ class ImageLoader:
         self.init_required_items_background()
 
     def init_player_images(self):
-        down = pygame.image.load(self.WORLD_IMAGE_PATH + "\\player\\0.png")
+        down = pygame.image.load(self.PLAYER_IMAGE_PATH + "0.png")
         down.convert()
         down = pygame.transform.scale(down, (Constants.PLAYER_SIZE, Constants.PLAYER_SIZE))
 
-        up = pygame.image.load(self.WORLD_IMAGE_PATH + "\\player\\1.png")
+        up = pygame.image.load(self.PLAYER_IMAGE_PATH + "1.png")
         up.convert()
         up = pygame.transform.scale(up, (Constants.PLAYER_SIZE, Constants.PLAYER_SIZE))
 
-        left = pygame.image.load(self.WORLD_IMAGE_PATH + "\\player\\2.png")
+        left = pygame.image.load(self.PLAYER_IMAGE_PATH + "2.png")
         left.convert()
         left = pygame.transform.scale(left, (Constants.PLAYER_SIZE, Constants.PLAYER_SIZE))
 
-        right = pygame.image.load(self.WORLD_IMAGE_PATH + "\\player\\3.png")
+        right = pygame.image.load(self.PLAYER_IMAGE_PATH + "3.png")
         right.convert()
         right = pygame.transform.scale(right, (Constants.PLAYER_SIZE, Constants.PLAYER_SIZE))
 
@@ -48,7 +48,7 @@ class ImageLoader:
         self.player_images.append(right)
 
     def init_ui(self):
-        ui_background = pygame.image.load(self.WORLD_IMAGE_PATH + "\\ui\\ui_background.png")
+        ui_background = pygame.image.load(self.UI_IMAGE_PATH + "ui_background.png")
         ui_background.convert()
         ui_background = pygame.transform.scale(ui_background, (Constants.UI_WIDTH, Constants.UI_HEIGHT))
 
@@ -56,7 +56,7 @@ class ImageLoader:
 
     def init_required_items_background(self):
 
-        picture = pygame.image.load(self.CRAFTING_IMAGE_PATH + "-1.png")
+        picture = pygame.image.load(self.UI_IMAGE_PATH + "-1.png")
         picture = pygame.transform.scale(picture, (
             Constants.REQUIRED_ITEMS_SCREEN_WIDTH, Constants.REQUIRED_ITEMS_SCREEN_HEIGHT))
         picture.convert()
@@ -87,7 +87,7 @@ class ImageLoader:
     def load_inventory_image(self, tile_code):
 
         if tile_code not in self.inventory_image_map.keys():
-            picture = pygame.image.load(self.INVENTORY_IMAGE_PATH + str(tile_code) + ".png")
+            picture = pygame.image.load(self.UI_IMAGE_PATH + str(tile_code) + ".png")
             picture = pygame.transform.scale(picture, (Constants.INVENTORY_CELL_SIZE, Constants.INVENTORY_CELL_SIZE))
             picture.convert()
 
@@ -97,17 +97,3 @@ class ImageLoader:
             self.inventory_image_map[tile_code] = surface
 
         return self.inventory_image_map[tile_code]
-
-    def load_crafting_image(self, tile_code):
-
-        if tile_code not in self.crafting_image_map.keys():
-            picture = pygame.image.load(self.CRAFTING_IMAGE_PATH + str(tile_code) + ".png")
-            picture = pygame.transform.scale(picture, (Constants.CRAFTING_CELL_SIZE, Constants.CRAFTING_CELL_SIZE))
-            picture.convert()
-
-            surface = pygame.Surface((Constants.CRAFTING_CELL_SIZE, Constants.CRAFTING_CELL_SIZE))
-            surface.blit(picture, picture.get_rect())
-
-            self.crafting_image_map[tile_code] = surface
-
-        return self.crafting_image_map[tile_code]

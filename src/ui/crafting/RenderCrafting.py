@@ -131,3 +131,10 @@ class RenderCrafting:
             offset_x += Constants.REQUIRED_ITEMS_CELL_SIZE
 
         return sprites
+
+    def get_crafting_button_sprite(self):
+
+        x = Constants.CRAFT_BUTTON_TOP_LEFT[0]
+        y = Constants.CRAFT_BUTTON_TOP_LEFT[1]
+
+        return Sprite(x, y, '1')

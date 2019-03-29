@@ -66,6 +66,8 @@ class MainLoop:
         self.draw_initial_crafting()
         self.draw_initial_required_items()
 
+        self.draw_crafting_button()
+
         while not game_over:
 
             mouse_pos = pygame.mouse.get_pos()
@@ -79,7 +81,7 @@ class MainLoop:
             self.draw_crafting()
 
             self.draw_required_items()
-            self.draw_required_items_border()
+            self.draw_crafting_button_border()
 
             self.update_inventory()
 
@@ -141,7 +143,7 @@ class MainLoop:
                     elif Constants.CRAFTING_RECT.collidepoint(mouse_pos):
                         self.selected_crafting_pos = self.render_crafting.select_item(mouse_pos)
 
-                    elif Constants.REQUIRED_ITEMS_RECT.collidepoint(mouse_pos):
+                    elif Constants.CRAFT_BUTTON_RECT.collidepoint(mouse_pos):
                         self.crafting_manager.craft_selected()
 
 
@@ -312,15 +314,25 @@ class MainLoop:
             text_surface = self.ui_font.render(sprite.text, False, (255, 255, 255))
             self.screen.blit(text_surface, (sprite.x, sprite.y))
 
-    def draw_required_items_border(self):
+    def draw_crafting_button(self):
+
+        rect = Constants.CRAFT_BUTTON_RECT
+        self.screen.blit(Singleton.imageLoader.load_inventory_image('1'), rect)
+
+        text_surface = self.ui_font.render("Craft!", False, (255, 255, 255))
+        self.screen.blit(text_surface, Constants.CRAFT_BUTTON_TEXT_TOP_LEFT)
+
+    def draw_crafting_button_border(self):
 
         color = (0, 0, 0)
 
-        if Constants.REQUIRED_ITEMS_RECT.collidepoint(pygame.mouse.get_pos()):
+        if Constants.CRAFT_BUTTON_RECT.collidepoint(pygame.mouse.get_pos()):
             if self.render_crafting.can_craft_selected():
                 color = (0, 255, 0)
+            else:
+                color = (255, 0, 0)
 
-        pygame.draw.rect(self.screen, color, Constants.REQUIRED_ITEMS_RECT, 1)
+        pygame.draw.rect(self.screen, color, Constants.CRAFT_BUTTON_RECT, 2)
 
 
     def draw_required_items(self):
@@ -351,7 +363,7 @@ class MainLoop:
 
             # TODO special sprites for crafting
 
-            self.screen.blit(Singleton.imageLoader.load_crafting_image(sprite.tile_code), rect)
+            self.screen.blit(Singleton.imageLoader.load_inventory_image(sprite.tile_code), rect)
 
     #===================================================================================================================
 
