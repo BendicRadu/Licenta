@@ -1,3 +1,6 @@
+from util import Constants
+
+
 class CraftingItem:
 
     # crafting_items_required map
@@ -11,11 +14,11 @@ class CraftingItem:
 
     @staticmethod
     def get_empty_cell():
-        item = CraftingItem("-1", None)
+        item = CraftingItem(Constants.TileCode.NaN.value, None)
         return item
 
     def is_empty_cell(self):
-        return self.tile_code == "-1" and self.crafting_items_required is None
+        return self.tile_code == Constants.TileCode.NaN.value and self.crafting_items_required is None
 
     def is_locked(self):
         return self.unlocked == False

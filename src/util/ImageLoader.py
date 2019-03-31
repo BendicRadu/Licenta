@@ -19,11 +19,19 @@ class ImageLoader:
 
         self.ui_background = None
         self.required_items_background = None
+        self.non_visible_tile = None
 
     def pygame_init(self):
         self.init_player_images()
         self.init_ui()
         self.init_required_items_background()
+        self.init_non_visible_tile()
+
+    def init_non_visible_tile(self):
+        surface = pygame.Surface((Constants.TILE_SIZE, Constants.TILE_SIZE))
+        surface.fill((0, 0, 0), surface.get_rect())
+
+        self.non_visible_tile = surface
 
     def init_player_images(self):
         down = pygame.image.load(self.PLAYER_IMAGE_PATH + "0.png")

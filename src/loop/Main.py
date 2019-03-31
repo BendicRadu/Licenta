@@ -37,6 +37,8 @@ class MainLoop:
             (Constants.GAME_SCREEN_WIDTH, Constants.GAME_SCREEN_HEIGHT)
         )
 
+        self.game_screen.set_alpha(None)
+
         self.clock = pygame.time.Clock()
 
         pygame.init()
@@ -61,8 +63,8 @@ class MainLoop:
         right_pressed = False
         left_pressed = False
 
-        # space for now
-        action_pressed = False
+        place_tile_pressed = False
+        break_tile_pressed = False
 
         #self.draw_ui()
         self.draw_initial_inventory()
@@ -91,6 +93,8 @@ class MainLoop:
 
             self.auto_move_player()
 
+            mouse_pos = pygame.mouse.get_pos()
+
             for event in pygame.event.get():
 
                 if event.type == pygame.KEYDOWN:
@@ -110,9 +114,6 @@ class MainLoop:
                     if event.key == pygame.K_ESCAPE:
                         game_over = True
 
-                    if event.key == pygame.K_SPACE:
-                        action_pressed = True
-
 
                 elif event.type == pygame.KEYUP:
 
@@ -128,15 +129,31 @@ class MainLoop:
                     if event.key == pygame.K_d:
                         right_pressed = False
 
-                    if event.key == pygame.K_SPACE:
-                        action_pressed = False
 
                 elif event.type == pygame.MOUSEBUTTONDOWN:
 
-                    mouse_pos = pygame.mouse.get_pos()
 
                     if self.game_screen.get_rect().collidepoint(mouse_pos):
-                        self.player_move_list = self.render_map.get_move_list_to_tile(mouse_pos)
+
+                        # If tile is in range, place or break depending on mouse button
+                        if self.world_change_manager.is_selected_tile_in_range_of_player(mouse_pos):
+
+                            # left mouse button (break tile)
+                            if event.button == 1:
+                                if self.world_change_manager.is_selected_tile_breakable(mouse_pos):
+                                    break_tile_pressed = True
+                                else:
+                                    self.player_move_list = self.render_map.get_move_list_to_tile(mouse_pos)
+
+
+                            # right mouse button (place tile)
+                            elif event.button == 3:
+                                place_tile_pressed = True
+
+                        # If not in range, move to tile
+                        else:
+                            if event.button == 1:
+                                self.player_move_list = self.render_map.get_move_list_to_tile(mouse_pos)
 
                     elif Constants.INVENTORY_RECT.collidepoint(mouse_pos):
                         self.selected_inventory_pos = self.render_inventory.select_item(mouse_pos)
@@ -147,8 +164,9 @@ class MainLoop:
                     elif Constants.CRAFT_BUTTON_RECT.collidepoint(mouse_pos):
                         self.crafting_manager.craft_selected()
 
-            if action_pressed:
-                self.world_change_manager.update_tile(pygame.mouse.get_pos())
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    break_tile_pressed = False
+                    place_tile_pressed = False
 
 
             dx, dy = 0, 0
@@ -173,11 +191,17 @@ class MainLoop:
                 self.player_move_list = []
                 self.render_map.move_player((dx, dy))
 
+            if place_tile_pressed:
+                self.world_change_manager.place_tile(mouse_pos)
+
+            elif break_tile_pressed:
+                self.world_change_manager.break_tile(mouse_pos)
+
 
             self.world_change_manager.frame_end()
 
             pygame.display.flip()
-            self.clock.tick(60)
+            self.clock.tick(80)
 
     pygame.quit()
 
@@ -190,7 +214,11 @@ class MainLoop:
         for sprite in sprites:
             rect = pygame.Rect(sprite.x, sprite.y, Constants.TILE_SIZE, Constants.TILE_SIZE)
 
-            self.game_screen.blit(Singleton.imageLoader.load_world_image(sprite.tile_code), rect)
+            if sprite.tile_code == Constants.TileCode.NaN:
+                self.game_screen.blit(Singleton.imageLoader.non_visible_tile, rect)
+
+            else:
+                self.game_screen.blit(Singleton.imageLoader.load_world_image(sprite.tile_code), rect)
 
     def draw_selected_inventory_item(self):
 
@@ -383,7 +411,7 @@ class MainLoop:
         total_hp_rect = hp_rect.get_hp_total_rect()
 
 
-        pygame.draw.rect(self.screen, (255, 0, 0), total_hp_rect)
+        pygame.draw.rect(self.screen, (0, 0, 0), total_hp_rect)
         pygame.draw.rect(self.screen, (0, 255, 0), remaining_hp_rect)
 
 
@@ -410,7 +438,7 @@ class MainLoop:
             rect = pygame.Rect(event.cell_x, event.cell_y, Constants.INVENTORY_CELL_SIZE, Constants.INVENTORY_CELL_SIZE)
             self.screen.blit(Singleton.imageLoader.load_inventory_image(event.tile_code), rect)
 
-            if event.tile_code == '-1':
+            if event.tile_code == Constants.TileCode.NaN.value:
                 continue
 
             text_surface = self.ui_font.render(event.quantity, False, (255, 255, 255))

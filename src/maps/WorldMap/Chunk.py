@@ -21,7 +21,7 @@ class Chunk:
         if self.is_chunk_generated():
             self.load_chunk()
         else:
-            Thread(target = self.generate_chunk(), args=())
+            self.generate_chunk()
 
     def is_chunk_generated(self):
 

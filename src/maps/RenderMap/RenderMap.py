@@ -5,6 +5,7 @@ from sprites.Player import Player
 from sprites.MapSprite import Sprite
 from sprites.Tile import SelectedTile
 from util import Constants
+from util.Singleton import Singleton
 
 
 class RenderMap:
@@ -17,7 +18,8 @@ class RenderMap:
         self.sprite_list = []
 
         # TODO Player coords should also be saved in a file
-        self.player = Player(500 * Constants.TILE_SIZE, 500 * Constants.TILE_SIZE)
+
+        self.player = Singleton.player
 
         self.camera = Camera()
 

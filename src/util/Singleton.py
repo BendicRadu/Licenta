@@ -8,5 +8,5 @@ class Singleton:
 
     imageLoader = ImageLoader()
     inventory   = Inventory()
-    player      = Player(500 * Constants.TILE_SIZE + Constants.MIDDLE_SCREEN_I,
-                         500 * Constants.TILE_SIZE + Constants.MIDDLE_SCREEN_J)
+    player      = Player(50 * Constants.CHUNK_SIZE * Constants.TILE_SIZE + Constants.MIDDLE_SCREEN_I,
+                         50 * Constants.CHUNK_SIZE * Constants.TILE_SIZE + Constants.MIDDLE_SCREEN_J)

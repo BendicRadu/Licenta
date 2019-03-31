@@ -37,7 +37,15 @@ class WorldChangeManager:
 
         return is_in_reach_x and is_in_reach_y and is_not_under_player
 
-    def update_tile(self, mouse_pos_raw):
+    def is_selected_tile_breakable(self, mouse_pos_raw):
+        tile = self.render_map.get_selected_tile(mouse_pos_raw)
+
+        return tile.tile_code in Constants.TILES_BREAKABLE
+
+
+    def break_tile(self, mouse_pos_raw):
+
+        # TODO Refactor
 
         if not self.is_selected_tile_in_range_of_player(mouse_pos_raw):
             return
@@ -46,15 +54,7 @@ class WorldChangeManager:
 
         if tile.tile_code in Constants.TILES_BUILDABLE:
             self.__reset_tile_to_break()
-            self.place_tile(mouse_pos_raw)
-
-        elif tile.tile_code in Constants.TILES_BREAKABLE:
-            self.break_tile(mouse_pos_raw)
-
-
-    def break_tile(self, mouse_pos_raw):
-
-        tile = self.render_map.get_selected_tile(mouse_pos_raw)
+            return
 
         self.is_breaking = True
 
@@ -83,6 +83,16 @@ class WorldChangeManager:
 
 
     def place_tile(self, mouse_pos_raw):
+
+        self.__reset_tile_to_break()
+
+        if not self.is_selected_tile_in_range_of_player(mouse_pos_raw):
+            return
+
+        tile = self.render_map.get_selected_tile(mouse_pos_raw)
+
+        if tile.tile_code in Constants.TILES_BREAKABLE:
+            self.break_tile(mouse_pos_raw)
 
         if not self.render_inventory.is_item_selected():
             return
@@ -126,8 +136,8 @@ class WorldChangeManager:
         x, y = self.render_map.get_top_left_xy_from_ij(i, j)
         y += Constants.TILE_SIZE - 5
 
-        remaining_hp = self.tile_to_break_thoughness
         total_hp = Constants.TILE_HIT_POINTS[tile_code]
+        remaining_hp = total_hp - self.tile_to_break_thoughness
 
         return HpRect(x, y, remaining_hp, total_hp)
 

@@ -41,6 +41,10 @@ class Player:
         return self.global_x + direction[0],\
                self.global_y + direction[1]
 
+    def get_chunk_offset(self):
+        return self.global_x // Constants.TILE_SIZE // Constants.CHUNK_SIZE, \
+               self.global_x // Constants.TILE_SIZE // Constants.CHUNK_SIZE
+
     def get_local_pos(self):
         return self.global_y // Constants.TILE_SIZE % Constants.CHUNK_SIZE, \
                self.global_x // Constants.TILE_SIZE % Constants.CHUNK_SIZE

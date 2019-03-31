@@ -1,4 +1,5 @@
 import time
+from threading import Thread
 
 from maps.WorldMap.WorldMap import WorldMap
 from sprites.Tile import Tile
@@ -8,7 +9,7 @@ from util.Singleton import Singleton
 
 class ScreenMap:
 
-    def __init__(self, chunk_offset = (5, 5), chunk_pos = Singleton.player.get_local_pos()):
+    def __init__(self, chunk_offset = Singleton.player.get_chunk_offset(), chunk_pos = Singleton.player.get_local_pos()):
 
         self.world_map = WorldMap()
 
@@ -59,6 +60,29 @@ class ScreenMap:
                 tile = self.world_map.get_tile(base_global_i + i, base_global_j + j)
                 self.matrix.add_tile(i, j, tile)
 
+        self.apply_effects()
+
+
+    def _get_buffered_tile_matrix(self, buff_i, buff_j):
+
+        row_size = Constants.WIDTH_NO_OF_TILES + buff_i * 2
+        column_size = Constants.HEIGHT_NO_OF_TILES + buff_j * 2
+
+        base_global_i, base_global_j = self.get_player_global_i_j(-Constants.HEIGHT_NO_OF_TILES // 2 - buff_i,
+                                                                  -Constants.WIDTH_NO_OF_TILES // 2 - buff_j)
+
+        matrix = []
+
+        for i in range(column_size):
+
+            row = []
+            for j in range(row_size):
+                tile = self.world_map.get_tile(base_global_i + i, base_global_j + j)
+                row.append(tile)
+
+            matrix.append(row)
+
+        return matrix
 
     def get_tile_list(self, mouse_pos, camera):
 
@@ -79,8 +103,6 @@ class ScreenMap:
         end_ij   = (end_tile.i, end_tile.j)
 
         return self.matrix.a_start(start_ij, end_ij)
-
-
 
     def get_selected_tile(self, mouse_pos):
 
@@ -121,13 +143,97 @@ class ScreenMap:
             self.player.global_y
         )
 
+        prev_chunk_pos = self.chunk_pos
+
         self.chunk_pos = self.get_updated_chunk_pos(
             self.player.global_x,
             self.player.global_y
         )
 
+        diff_i = prev_chunk_pos[0] - self.chunk_pos[0]
+        diff_j = prev_chunk_pos[1] - self.chunk_pos[1]
 
-        self.update_tiles()
+        if diff_i != 0 or diff_j != 0:
+            print(diff_i, diff_j)
+
+        if abs(diff_i) == Constants.CHUNK_SIZE - 1 or abs(diff_j) == Constants.CHUNK_SIZE - 1:
+            self.update_tiles()
+            self.apply_effects()
+
+        elif diff_i > 0:
+            self.move_map_up()
+            self.apply_effects()
+
+        elif diff_i < 0:
+            self.move_map_down()
+            self.apply_effects()
+
+        elif diff_j > 0:
+            self.move_map_left()
+            self.apply_effects()
+
+        elif diff_j < 0:
+            self.move_map_right()
+            self.apply_effects()
+
+
+
+    def move_map_up(self):
+        row_size = Constants.WIDTH_NO_OF_TILES
+
+        base_global_i, base_global_j = self.get_player_global_i_j(-Constants.HEIGHT_NO_OF_TILES // 2,
+                                                                  -Constants.WIDTH_NO_OF_TILES // 2)
+
+        i = base_global_i
+        row = []
+
+        for j in range(row_size):
+            row.append(self.world_map.get_tile(i, base_global_j + j))
+
+        del self.matrix.matrix[-1]
+        self.matrix.matrix.insert(0, row)
+
+    def move_map_down(self):
+        row_size = Constants.WIDTH_NO_OF_TILES
+
+        base_global_i, base_global_j = self.get_player_global_i_j(-Constants.HEIGHT_NO_OF_TILES // 2,
+                                                                  -Constants.WIDTH_NO_OF_TILES // 2)
+
+        i = base_global_i + Constants.HEIGHT_NO_OF_TILES - 1
+
+        row = []
+
+        for j in range(row_size):
+            row.append(self.world_map.get_tile(i, base_global_j + j))
+
+        del self.matrix.matrix[0]
+        self.matrix.matrix.append(row)
+
+
+    def move_map_left(self):
+        column_size = Constants.HEIGHT_NO_OF_TILES
+
+        base_global_i, base_global_j = self.get_player_global_i_j(-Constants.HEIGHT_NO_OF_TILES // 2,
+                                                                  -Constants.WIDTH_NO_OF_TILES // 2)
+
+        j = base_global_j
+
+        for i in range(column_size):
+            del self.matrix.matrix[i][-1]
+            self.matrix.matrix[i].insert(0, self.world_map.get_tile(base_global_i + i, j))
+
+    def move_map_right(self):
+        column_size = Constants.HEIGHT_NO_OF_TILES
+
+        base_global_i, base_global_j = self.get_player_global_i_j(-Constants.HEIGHT_NO_OF_TILES // 2,
+                                                                  -Constants.WIDTH_NO_OF_TILES // 2)
+
+        j = base_global_j + Constants.WIDTH_NO_OF_TILES - 1
+
+        for i in range(column_size):
+            del self.matrix.matrix[i][0]
+            self.matrix.matrix[i].append(self.world_map.get_tile(base_global_i + i, j))
+
 
     def get_matrix_tile(self, i, j):
         return self.matrix.get_tile(i, j)
@@ -142,6 +248,36 @@ class ScreenMap:
             center_j,
             self.matrix.get_tile(center_i, center_j)
         )
+
+
+    def apply_effects(self):
+
+        matrix = self._get_buffered_tile_matrix(1, 1)
+
+        for i in range(1, len(matrix) - 1):
+            for j in range(1, len(matrix[0]) - 1):
+                # TODO Replace to ore check
+
+                # Center
+                if not matrix[i][j] in Constants.TILES_ORE: continue
+                # Top
+                elif not matrix[i - 1][j] in Constants.TILES_ORE: continue
+                # Top left
+                elif not matrix[i - 1][j - 1] in Constants.TILES_ORE: continue
+                # Top right
+                elif not matrix[i - 1][j + 1] in Constants.TILES_ORE: continue
+                # Bot
+                elif not matrix[i + 1][j] in Constants.TILES_ORE: continue
+                # Bot left
+                elif not matrix[i + 1][j - 1] in Constants.TILES_ORE: continue
+                # Bot tight
+                elif not matrix[i + 1][j + 1] in Constants.TILES_ORE: continue
+                # Left
+                elif not matrix[i][j - 1] in Constants.TILES_ORE: continue
+                # Right
+                elif not matrix[i][j + 1] in Constants.TILES_ORE: continue
+
+                self.matrix.set_tile(i - 1, j - 1, "-1")
 
 
 
@@ -167,6 +303,8 @@ class ScreenMapMatrix:
     def get_tile(self, i, j):
         return self.matrix[i][j]
 
+    def set_tile(self, i, j, value):
+        self.matrix[i][j] = value
 
     def a_start(self, start_ij, end_ij):
 

@@ -43,7 +43,7 @@ HP_BOX_HEIGHT = 5
 
 SIGHT_RADIUS = GAME_SCREEN_WIDTH + 100
 
-PLAYER_SPEED = 3
+PLAYER_SPEED = 4
 
 PLAYER_SCREEN_X = int(GAME_SCREEN_WIDTH / 2 - PLAYER_SIZE / 2)
 PLAYER_SCREEN_Y = int(GAME_SCREEN_HEIGHT / 2 - PLAYER_SIZE / 2)
@@ -75,6 +75,7 @@ MIDDLE_SCREEN_J = WIDTH_NO_OF_TILES // 2 // TILE_SIZE
 
 
 class TileCode(Enum):
+    NaN   = '-1'
     GRASS = '0'
     ROCK  = '1'
     TREE  = '2'
@@ -122,6 +123,8 @@ TILES_WITH_COLLIDERS = ['1', '2', '4', '1000']
 TILES_BUILDABLE = ['0', '4']
 TILES_BREAKABLE = ['1', '2', '5', '1000']
 TILES_OPAQUE = ['1', '-1']
+
+TILES_ORE = ['1']
 
 # INVENTORY --------------------------------------
 
@@ -211,6 +214,7 @@ def get_tile_code_from_perlin(perlin_value):
     elif 260 <= k < 270:
         object_type = TileCode.TREE.value
 
+
     elif 270 <= k < 520:
         object_type = TileCode.get_random_tile()
 
@@ -236,7 +240,7 @@ def spawn_tile():
 
 
 def can_spawn_crafting_chest():
-    return randint(0, CHUNK_SIZE * CHUNK_SIZE) < 10
+    return randint(0, CHUNK_SIZE * CHUNK_SIZE) < 5
 
 class CraftingItems(Enum):
 
