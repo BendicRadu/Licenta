@@ -17,7 +17,7 @@ class MainLoop:
         self.render_inventory = RenderInventory()
         self.render_crafting  = RenderCrafting()
 
-        self.world_change_manager = WorldChangeManager(self.render_map, self.render_inventory)
+        self.world_change_manager = WorldChangeManager(self.render_map, self.render_inventory, self.render_crafting)
         self.crafting_manager     = CraftingManager(self.render_crafting, self.render_inventory)
 
         # List of automatic player moves
@@ -61,6 +61,9 @@ class MainLoop:
         right_pressed = False
         left_pressed = False
 
+        # space for now
+        action_pressed = False
+
         #self.draw_ui()
         self.draw_initial_inventory()
         self.draw_initial_crafting()
@@ -70,25 +73,23 @@ class MainLoop:
 
         while not game_over:
 
-            mouse_pos = pygame.mouse.get_pos()
-
+            self.world_change_manager.frame_start()
 
             self.draw_tile_sprites()
             self.draw_selected_tile()
             self.draw_player()
             self.draw_game_screen()
 
-            self.draw_crafting()
-
-            self.draw_required_items()
-            self.draw_crafting_button_border()
-
             self.update_inventory()
-
-            self.auto_move_player()
+            self.update_required_items()
+            self.update_crafting()
+            self.draw_tile_to_break_hitpoints()
 
             self.draw_selected_inventory_item()
             self.draw_selected_crafting_item()
+            self.draw_crafting_button_border()
+
+            self.auto_move_player()
 
             for event in pygame.event.get():
 
@@ -110,10 +111,7 @@ class MainLoop:
                         game_over = True
 
                     if event.key == pygame.K_SPACE:
-
-                        # TODO Make propper event
-
-                        self.world_change_manager.update_tile(pygame.mouse.get_pos())
+                        action_pressed = True
 
 
                 elif event.type == pygame.KEYUP:
@@ -130,6 +128,9 @@ class MainLoop:
                     if event.key == pygame.K_d:
                         right_pressed = False
 
+                    if event.key == pygame.K_SPACE:
+                        action_pressed = False
+
                 elif event.type == pygame.MOUSEBUTTONDOWN:
 
                     mouse_pos = pygame.mouse.get_pos()
@@ -141,10 +142,13 @@ class MainLoop:
                         self.selected_inventory_pos = self.render_inventory.select_item(mouse_pos)
 
                     elif Constants.CRAFTING_RECT.collidepoint(mouse_pos):
-                        self.selected_crafting_pos = self.render_crafting.select_item(mouse_pos)
+                        self.selected_crafting_pos = self.crafting_manager.select_crafting_recepie(mouse_pos)
 
                     elif Constants.CRAFT_BUTTON_RECT.collidepoint(mouse_pos):
                         self.crafting_manager.craft_selected()
+
+            if action_pressed:
+                self.world_change_manager.update_tile(pygame.mouse.get_pos())
 
 
             dx, dy = 0, 0
@@ -170,8 +174,10 @@ class MainLoop:
                 self.render_map.move_player((dx, dy))
 
 
+            self.world_change_manager.frame_end()
+
             pygame.display.flip()
-            self.clock.tick(90)
+            self.clock.tick(60)
 
     pygame.quit()
 
@@ -365,6 +371,22 @@ class MainLoop:
 
             self.screen.blit(Singleton.imageLoader.load_inventory_image(sprite.tile_code), rect)
 
+    def draw_tile_to_break_hitpoints(self):
+
+        hp_rect = self.world_change_manager.get_tile_to_break_hp_rects()
+
+
+        if hp_rect is None:
+            return
+
+        remaining_hp_rect = hp_rect.get_hp_left_rect()
+        total_hp_rect = hp_rect.get_hp_total_rect()
+
+
+        pygame.draw.rect(self.screen, (255, 0, 0), total_hp_rect)
+        pygame.draw.rect(self.screen, (0, 255, 0), remaining_hp_rect)
+
+
     #===================================================================================================================
 
     def auto_move_player(self):
@@ -394,6 +416,37 @@ class MainLoop:
             text_surface = self.ui_font.render(event.quantity, False, (255, 255, 255))
             self.screen.blit(text_surface, (event.text_x, event.text_y))
 
+    def update_crafting(self):
+
+        update_events  = self.world_change_manager.crafting_update_events
+        self.clear_crafting_events()
+
+        for event in update_events:
+
+            rect = pygame.Rect(event.cell_x, event.cell_y, Constants.CRAFTING_CELL_SIZE, Constants.CRAFTING_CELL_SIZE)
+            self.screen.blit(Singleton.imageLoader.load_inventory_image(event.tile_code), rect)
+
+
+
+    def update_required_items(self):
+
+        update_events = self.crafting_manager.required_items_update_events
+        self.clear_required_items_events()
+
+        for event in update_events:
+
+            self.draw_initial_required_items()
+
+            for sprite in event.required_items_sprites:
+                rect = pygame.Rect(sprite.x, sprite.y, Constants.REQUIRED_ITEMS_CELL_SIZE,
+                                   Constants.REQUIRED_ITEMS_CELL_SIZE)
+
+                self.screen.blit(Singleton.imageLoader.load_inventory_image(sprite.tile_code), rect)
+
+            for sprite in event.quantity_sprites:
+                text_surface = self.ui_font.render(sprite.text, False, (255, 255, 255))
+                self.screen.blit(text_surface, (sprite.x, sprite.y))
+
 
     #===================================================================================================================
 
@@ -401,6 +454,11 @@ class MainLoop:
         self.world_change_manager.inventory_update_events = []
         self.crafting_manager.inventory_update_events = []
 
+    def clear_required_items_events(self):
+        self.crafting_manager.required_items_update_events = []
+
+    def clear_crafting_events(self):
+        self.world_change_manager.crafting_update_events = []
 
 a = MainLoop()
 a.run()

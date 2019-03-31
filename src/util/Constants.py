@@ -8,9 +8,12 @@ from pygame.rect import Rect
 
 from ui.crafting.CraftingItem import CraftingItem
 
+PERLIN_BUFFER = 2
+
 CHUNK_SIZE = 100
 PLAYER_SIZE = 23
 TILE_SIZE = 55
+
 
 # Playable area
 GAME_SCREEN_WIDTH = 1400
@@ -28,11 +31,17 @@ GAME_SCREEN_CENTER_Y = GAME_SCREEN_HEIGHT // 2
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 
+
+
 # ui (crafting and inventory)
 UI_WIDTH  = SCREEN_WIDTH - GAME_SCREEN_WIDTH
 UI_HEIGHT = SCREEN_HEIGHT
 
 # -----------------------GAME-STATS------------------------------------
+
+HP_BOX_HEIGHT = 5
+
+SIGHT_RADIUS = GAME_SCREEN_WIDTH + 100
 
 PLAYER_SPEED = 3
 
@@ -54,8 +63,9 @@ HEIGHT_NO_OF_TILES = GAME_SCREEN_HEIGHT // TILE_SIZE + 2
 # When generating the chunk, a random index is chosen
 SPAWN_CHANCE_LIST = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                     1,
                      2, 2]
+
+
 
 CHUNK_MIDDLE_OFFSET_I = 50
 CHUNK_MIDDLE_OFFSET_J = 50
@@ -71,6 +81,12 @@ class TileCode(Enum):
     WATER = '4'
     WOOD_FLOOR = '5'
 
+    CRAFTING_CHEST = '1000'
+
+    @staticmethod
+    def get_random_tile():
+        return SPAWN_CHANCE_LIST[randint(0, len(SPAWN_CHANCE_LIST))]
+
     @staticmethod
     def get_description(value):
 
@@ -85,6 +101,16 @@ class TileCode(Enum):
         elif value == 4:
             return "Water"
 
+# How long does it take to break a tile
+TILE_HIT_POINTS= {
+    TileCode.ROCK.value: 100,
+    TileCode.TREE.value: 50,
+    TileCode.WOOD_FLOOR.value: 50,
+    TileCode.CRAFTING_CHEST.value: 200
+}
+
+
+
 class Direction(Enum):
     DOWN  = 0
     UP    = 1
@@ -92,9 +118,10 @@ class Direction(Enum):
     RIGHT = 3
 
 
-TILES_WITH_COLLIDERS = ['1', '2', '4']
-TILES_BUILDABLE = ['0']
-TILES_BREAKABLE = ['1', '2', '5']
+TILES_WITH_COLLIDERS = ['1', '2', '4', '1000']
+TILES_BUILDABLE = ['0', '4']
+TILES_BREAKABLE = ['1', '2', '5', '1000']
+TILES_OPAQUE = ['1', '-1']
 
 # INVENTORY --------------------------------------
 
@@ -175,13 +202,17 @@ def get_tile_code_from_perlin(perlin_value):
     k = perlin_value
 
     if k < 260:
+
         object_type = TileCode.WATER.value
+
+        if 100 < k < 110:
+            object_type = TileCode.get_random_tile()
 
     elif 260 <= k < 270:
         object_type = TileCode.TREE.value
 
     elif 270 <= k < 520:
-        object_type = SPAWN_CHANCE_LIST[randint(0, len(SPAWN_CHANCE_LIST))]
+        object_type = TileCode.get_random_tile()
 
     elif 520 <= k < 700:
         object_type = TileCode.TREE.value
@@ -204,6 +235,8 @@ def spawn_tile():
     return SPAWN_CHANCE_LIST[randint(0, len(SPAWN_CHANCE_LIST))]
 
 
+def can_spawn_crafting_chest():
+    return randint(0, CHUNK_SIZE * CHUNK_SIZE) < 10
 
 class CraftingItems(Enum):
 

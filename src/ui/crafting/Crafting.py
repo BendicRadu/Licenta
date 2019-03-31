@@ -17,7 +17,7 @@ class Crafting:
 
     def select(self, pos):
 
-        if self.get_matrix()[pos].is_empty_cell():
+        if self.get_matrix()[pos].is_empty_cell() or self.get_matrix()[pos].is_locked():
             self.selected_pos = None
             return None
 
@@ -59,7 +59,14 @@ class Crafting:
 
     def can_craft(self):
 
+        if self.selected_pos is None:
+            return False
+
         item_to_craft = self.crafting_matrix[self.selected_pos]
+
+        if not item_to_craft.unlocked:
+            return False
+
         required_items = item_to_craft.crafting_items_required
 
         for tile_code in required_items.keys():
@@ -74,7 +81,8 @@ class Crafting:
 
         return True
 
-
+    def unlock_next_item(self):
+        return self.crafting_matrix.unlock_next_item()
 
 
 
@@ -88,21 +96,39 @@ class CraftingMatrix:
         self.width = Constants.CRAFTING_MATRIX_WIDTH
         self.height = Constants.CRAFTING_MATRIX_HEIGHT
 
+        self.unlocked_items_no = 0
+
+        crafting_item_list = [crafting_item.value for crafting_item in Constants.CraftingItems]
+        current_item_index = 0
+
         for i in range(self.height):
 
             matrix_row = []
 
             for j in range(self.width):
-                matrix_row.append(CraftingItem.get_empty_cell())
+
+                if current_item_index < len(crafting_item_list):
+
+                    matrix_row.append(crafting_item_list[current_item_index])
+
+                    if current_item_index < self.unlocked_items_no:
+                        matrix_row[-1].unlocked = True
+
+                    current_item_index += 1
+
+                else:
+                    matrix_row.append(CraftingItem.get_empty_cell())
 
             self.matrix.append(matrix_row)
 
-        # TODO remove this
+    def unlock_next_item(self):
+        self.unlocked_items_no += 1
 
-        self[(0, 2)] = Constants.CraftingItems.WOOD_FLOOR.value
-        self[(0, 1)] = Constants.CraftingItems.ROCK_FLOOR.value
-        self[(0, 0)] = Constants.CraftingItems.MAGIC_TILE.value
-
+        for i in range(self.height):
+            for j in range(self.width):
+                if not self[i, j].unlocked:
+                    self[i, j].unlocked = True
+                    return i, j
 
     def __getitem__(self, pos):
         return self.matrix[pos[0]][pos[1]]

@@ -223,6 +223,14 @@ class RenderMap:
 
         return moves
 
+
+    def get_top_left_xy_from_ij(self, i, j):
+
+        x = j * Constants.TILE_SIZE - self.camera.offset_x
+        y = i * Constants.TILE_SIZE - self.camera.offset_y
+
+        return x, y
+
 class Camera:
 
     def __init__(self):

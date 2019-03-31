@@ -11,13 +11,18 @@ class CraftingManager:
         self.render_inventory = render_inventory
 
         self.inventory_update_events = []
+        self.required_items_update_events = []
+
+
+    def select_crafting_recepie(self, mouse_pos):
+        self.render_crafting.select_item(mouse_pos)
+        self.required_items_update_events.append(self.render_crafting.get_required_items_update_event())
+        return self.render_crafting.select_item(mouse_pos)
 
 
     def craft_selected(self):
 
         added_pos = self.render_crafting.craft_selected()
-
-        print(added_pos)
 
         if added_pos is not None:
 

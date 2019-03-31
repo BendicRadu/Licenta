@@ -71,7 +71,11 @@ class Chunk:
 
                 perlin_value = int(perlin_matrix[i][j] * 1000)
 
-                object_type = Constants.get_tile_code_from_perlin(perlin_value)
+                if Constants.can_spawn_crafting_chest():
+                    object_type = Constants.TileCode.CRAFTING_CHEST.value
+
+                else:
+                    object_type = Constants.get_tile_code_from_perlin(perlin_value)
 
                 # random_index = random.randint(0, len(Constants.SPAWN_CHANCE_LIST) - 1)
                 # object_type = Constants.SPAWN_CHANCE_LIST[random_index]
@@ -117,7 +121,7 @@ class ChunkMask:
 
             for j in range(Constants.CHUNK_SIZE):
 
-                if self.is_point_in_circle(i, j) or self.modifier():
+                if self.is_tile_in_circle(i, j) or self.modifier():
                     row.append(False)
                 else:
                     row.append(True)
@@ -125,14 +129,16 @@ class ChunkMask:
             self.mask.append(row)
 
 
+
+
     # r - radius
     # n - resolution
-    def is_point_in_circle(self, i, j):
+    def is_tile_in_circle(self, i, j):
 
-        x = j - Constants.CHUNK_SIZE // 2
-        y = Constants.CHUNK_SIZE - (i + Constants.CHUNK_SIZE // 2)
+        x = ((j - Constants.CHUNK_SIZE // 2) * Constants.TILE_SIZE) + Constants.TILE_SIZE / 2
+        y = ((Constants.CHUNK_SIZE - (i + Constants.CHUNK_SIZE // 2)) * Constants.TILE_SIZE) + Constants.TILE_SIZE / 2
 
-        radius = Constants.CHUNK_SIZE - 10
+        radius = (Constants.CHUNK_SIZE - 10) * Constants.TILE_SIZE
 
         return abs(x) + abs(y) < radius
 
@@ -148,4 +154,4 @@ class ChunkMask:
 
 
     def modifier(self):
-        return random.randint(0, 1) == 0
+        return random.randint(0, 4) == 0

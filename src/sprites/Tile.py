@@ -6,6 +6,12 @@ class Tile:
         self.j = j
         self.tile_code = tile_code
 
+    def __eq__(self, other):
+
+        if other is None:
+            return False
+
+        return self.i == other.i and self.j == other.j and self.tile_code == other.tile_code
 
 class SelectedTile:
 

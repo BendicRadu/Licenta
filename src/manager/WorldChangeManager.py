@@ -1,18 +1,29 @@
+import pygame
+
 from maps.RenderMap.RenderMap import RenderMap
+from sprites.HpRect import HpRect
 from ui.inventory.RenderInventory import RenderInventory
 from util import Constants
 
 
 class WorldChangeManager:
 
-    def __init__(self, render_map, render_inventory):
+    def __init__(self, render_map, render_inventory, render_crafting):
 
         # TODO Replace with constructor params
 
         self.render_map = render_map
         self.render_inventory = render_inventory
+        self.render_crafting  = render_crafting
 
         self.inventory_update_events = []
+        self.crafting_update_events = []
+
+        # This is used so a tile doesn't break instantly
+        self.tile_to_break = None
+        self.tile_to_break_thoughness = None
+        # This is used to signal that the player started breaking a tile last frame
+        self.is_breaking = False
 
     def is_selected_tile_in_range_of_player(self, mouse_pos_raw):
 
@@ -34,6 +45,7 @@ class WorldChangeManager:
         tile = self.render_map.get_selected_tile(mouse_pos_raw)
 
         if tile.tile_code in Constants.TILES_BUILDABLE:
+            self.__reset_tile_to_break()
             self.place_tile(mouse_pos_raw)
 
         elif tile.tile_code in Constants.TILES_BREAKABLE:
@@ -44,16 +56,31 @@ class WorldChangeManager:
 
         tile = self.render_map.get_selected_tile(mouse_pos_raw)
 
-        # Can't break buildable tiles (Grass, dirt, etc)
-        if tile.tile_code in Constants.TILES_BUILDABLE:
-            return
+        self.is_breaking = True
 
-        self.render_map.remove_selected_tile(mouse_pos_raw)
-        added_pos = self.render_inventory.auto_add_item(tile.tile_code, 1)
+        if self.tile_to_break != tile:
+            self.tile_to_break = tile
+            self.tile_to_break_thoughness = Constants.TILE_HIT_POINTS[tile.tile_code]
+            self.is_breaking = True
 
-        event = self.render_inventory.get_item_update_event(added_pos)
+        self.tile_to_break_thoughness -= 1
 
-        self.inventory_update_events.append(event)
+        if self.tile_to_break_thoughness <= 0:
+
+            self.__reset_tile_to_break()
+
+            self.render_map.remove_selected_tile(mouse_pos_raw)
+
+            # Player has unlocked a new item (Crafting chests are not added to the inventory)
+            if tile.tile_code == Constants.TileCode.CRAFTING_CHEST.value:
+                event = self.render_crafting.unlock_next_item()
+                self.crafting_update_events.append(event)
+
+            else:
+                added_pos = self.render_inventory.auto_add_item(tile.tile_code, 1)
+                event = self.render_inventory.get_item_update_event(added_pos)
+                self.inventory_update_events.append(event)
+
 
     def place_tile(self, mouse_pos_raw):
 
@@ -78,3 +105,35 @@ class WorldChangeManager:
         self.inventory_update_events.append(event)
 
 
+    def __reset_tile_to_break(self):
+        self.tile_to_break = None
+        self.tile_to_break_thoughness = None
+        self.is_breaking = False
+
+
+    def get_tile_to_break_hp_rects(self):
+
+        if self.tile_to_break is None:
+            return
+
+        tile_to_break = self.tile_to_break
+
+        i = tile_to_break.i
+        j = tile_to_break.j
+
+        tile_code = tile_to_break.tile_code
+
+        x, y = self.render_map.get_top_left_xy_from_ij(i, j)
+        y += Constants.TILE_SIZE - 5
+
+        remaining_hp = self.tile_to_break_thoughness
+        total_hp = Constants.TILE_HIT_POINTS[tile_code]
+
+        return HpRect(x, y, remaining_hp, total_hp)
+
+    def frame_start(self):
+        self.is_breaking = False
+
+    def frame_end(self):
+        if not self.is_breaking:
+            self.__reset_tile_to_break()

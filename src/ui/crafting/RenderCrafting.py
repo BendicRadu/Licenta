@@ -21,6 +21,9 @@ class RenderCrafting:
 
                 tile_code = matrix[(i, j)].tile_code
 
+                if tile_code != '-1' and not matrix[i, j].unlocked:
+                    tile_code = '1000'
+
                 x = j * Constants.CRAFTING_CELL_SIZE + Constants.CRAFTING_TOP_LEFT[0]
                 y = i * Constants.CRAFTING_CELL_SIZE + Constants.CRAFTING_TOP_LEFT[1]
 
@@ -138,3 +141,38 @@ class RenderCrafting:
         y = Constants.CRAFT_BUTTON_TOP_LEFT[1]
 
         return Sprite(x, y, '1')
+
+    def get_required_items_update_event(self):
+        return RequiredItemsUpdateEvent(
+            self.get_selected_required_items_sprites(),
+            self.get_selected_required_items_sprites_quantities()
+        )
+
+    def unlock_next_item(self):
+        unlocked_pos = self.crafting.unlock_next_item()
+        tile_code = self.crafting.get_matrix()[unlocked_pos].tile_code
+
+        i, j = unlocked_pos
+
+        x = j * Constants.CRAFTING_CELL_SIZE + Constants.CRAFTING_TOP_LEFT[0]
+        y = i * Constants.CRAFTING_CELL_SIZE + Constants.CRAFTING_TOP_LEFT[1]
+
+        return CraftingUpdateEvent(x, y, tile_code)
+
+
+# Only happens when unlocking a new item
+class CraftingUpdateEvent:
+
+    def __init__(self, cell_x, cell_y, tile_code):
+        self.cell_x = cell_x
+        self.cell_y = cell_y
+
+        self.tile_code = tile_code
+
+
+class RequiredItemsUpdateEvent:
+
+    def __init__(self, required_items_sprites, quantity_sprites):
+
+        self.required_items_sprites = required_items_sprites
+        self.quantity_sprites = quantity_sprites
