@@ -27,7 +27,7 @@ class MainLoop:
 
         self.screen = pygame.display.set_mode(
             (Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT),
-            pygame.FULLSCREEN | pygame.DOUBLEBUF
+             pygame.FULLSCREEN |pygame.DOUBLEBUF
         )
 
         self.screen.set_alpha(None)
@@ -73,7 +73,10 @@ class MainLoop:
 
         self.draw_crafting_button()
 
+
         while not game_over:
+            self.render_map.re_apply_effects()
+
 
             self.world_change_manager.frame_start()
 
@@ -201,10 +204,11 @@ class MainLoop:
             self.world_change_manager.frame_end()
 
             pygame.display.flip()
-            self.clock.tick(80)
+            self.clock.tick(60)
 
-    pygame.quit()
+        # ----------- Game quit
 
+        self.quit()
 
 
     def draw_tile_sprites(self):
@@ -253,6 +257,9 @@ class MainLoop:
     def draw_selected_tile(self):
 
         mouse_pos = pygame.mouse.get_pos()
+
+        if not self.game_screen.get_rect().collidepoint(mouse_pos):
+            return
 
         is_selected_reachable = self.world_change_manager\
             .is_selected_tile_in_range_of_player(mouse_pos)
@@ -476,7 +483,7 @@ class MainLoop:
                 self.screen.blit(text_surface, (sprite.x, sprite.y))
 
 
-    #===================================================================================================================
+    # ===================================================================================================================
 
     def clear_inventory_events(self):
         self.world_change_manager.inventory_update_events = []
@@ -487,6 +494,20 @@ class MainLoop:
 
     def clear_crafting_events(self):
         self.world_change_manager.crafting_update_events = []
+
+    # ==================================================================================================================
+
+    def quit(self):
+
+        player_coords = self.render_map.get_player_coords()
+        crafting_items = self.render_crafting.get_crafting_items_no()
+        camera_coords = self.render_map.get_camera_coords()
+
+        Singleton.player_stats.save(player_coords, crafting_items, camera_coords)
+
+        self.render_inventory.save()
+        pygame.quit()
+
 
 a = MainLoop()
 a.run()

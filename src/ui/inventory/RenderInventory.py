@@ -12,6 +12,8 @@ class RenderInventory:
 
         self.inventory = Singleton.inventory
 
+    def save(self):
+        self.inventory.save()
 
     def get_sprites(self):
 

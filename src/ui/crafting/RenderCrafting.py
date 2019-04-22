@@ -9,6 +9,8 @@ class RenderCrafting:
     def __init__(self):
         self.crafting = Crafting()
 
+    def get_crafting_items_no(self):
+        return self.crafting.get_crafting_items_no()
 
     def get_sprites(self):
 

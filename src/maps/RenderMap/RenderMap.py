@@ -23,6 +23,21 @@ class RenderMap:
 
         self.camera = Camera()
 
+    def get_camera_coords(self):
+        return self.camera.offset_x, self.camera.offset_y
+
+    def get_player_coords(self):
+        return self.player.global_x, self.player.global_y
+
+    def get_chunk_offset(self):
+        return self.screen_map.get_chunk_offset()
+
+    def get_chunk_pos(self):
+        return self.screen_map.get_chunk_pos()
+
+    def re_apply_effects(self):
+        self.screen_map.apply_effects()
+
     def get_sprites(self):
 
         tile_matrix = self.screen_map.get_tiles()
@@ -149,11 +164,17 @@ class RenderMap:
         mouse_pos = self.unapply_camera(mouse_pos_raw)
         self.screen_map.update_selected_tile(mouse_pos, Constants.TileCode.GRASS.value)
 
-
     def place_on_selected_tile(self, mouse_pos_raw, tile_code):
         mouse_pos = self.unapply_camera(mouse_pos_raw)
         self.screen_map.update_selected_tile(mouse_pos, tile_code)
 
+    def remove_growing_tile(self, mouse_pos_raw):
+        mouse_pos = self.unapply_camera(mouse_pos_raw)
+        self.screen_map.remove_growing_tile(mouse_pos)
+
+    def add_growing_tile(self, mouse_pos_raw, tile_code):
+        mouse_pos = self.unapply_camera(mouse_pos_raw)
+        self.screen_map.place_growing_tile(mouse_pos, tile_code)
 
     def get_move_list_to_tile(self, mouse_pos_raw):
 
@@ -236,8 +257,8 @@ class RenderMap:
 class Camera:
 
     def __init__(self):
-        self.offset_x = 0
-        self.offset_y = 0
+        self.offset_x = Singleton.player_stats.camera_offset_x
+        self.offset_y = Singleton.player_stats.camera_offset_y
 
     def move_camera(self, direction):
         self.offset_x += direction[0]

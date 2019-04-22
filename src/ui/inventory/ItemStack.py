@@ -1,12 +1,15 @@
 from util import Constants
 
 
-class Item:
+class ItemStack:
 
-    def __init__(self, tile_code, quantity, is_virtual = False):
+    def __init__(self, tile_code, quantity, is_virtual = False, inventory_i = None, inventory_j = None):
 
         self.tile_code = tile_code
         self.quantity  = quantity
+
+        self.inventory_i = inventory_i
+        self.inventory_j = inventory_j
 
         self.quantity_buffer = 0
 
@@ -19,7 +22,7 @@ class Item:
     @staticmethod
     def get_empty_cell():
         # TODO Change to empty inventory cell sprite
-        return Item('-1', -1)
+        return ItemStack('-1', -1)
 
     def is_empty_cell(self):
         return self.tile_code == '-1' and self.quantity == -1
@@ -32,7 +35,7 @@ class Item:
         self.quantity_buffer = self.quantity // 2
         self.quantity -= self.quantity // 2
 
-        return Item(self.tile_code, self.quantity, True)
+        return ItemStack(self.tile_code, self.quantity, True)
 
     def split_finish(self):
         self.quantity_buffer = 0
@@ -74,5 +77,4 @@ class Item:
     def is_full(self):
         return self.quantity == Constants.ITEM_STACK_SIZE
 
-    def __repr__(self):
-        return "Item ( tile_code = " + str(self.tile_code) + ", quantity = " + str(self.quantity) + ", virtual = " + str(self.is_virtual) + " )"
+

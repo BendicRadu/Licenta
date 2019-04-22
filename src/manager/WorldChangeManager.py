@@ -2,15 +2,15 @@ import pygame
 
 from maps.RenderMap.RenderMap import RenderMap
 from sprites.HpRect import HpRect
+from ui.crafting.RenderCrafting import RenderCrafting
 from ui.inventory.RenderInventory import RenderInventory
 from util import Constants
+from util.Singleton import Singleton
 
 
 class WorldChangeManager:
 
-    def __init__(self, render_map, render_inventory, render_crafting):
-
-        # TODO Replace with constructor params
+    def __init__(self, render_map: RenderMap, render_inventory: RenderInventory, render_crafting: RenderCrafting):
 
         self.render_map = render_map
         self.render_inventory = render_inventory
@@ -71,15 +71,23 @@ class WorldChangeManager:
 
             self.render_map.remove_selected_tile(mouse_pos_raw)
 
+            if tile.tile_code in Constants.TILES_THAT_GROW:
+                self.render_map.remove_growing_tile(mouse_pos_raw)
+
             # Player has unlocked a new item (Crafting chests are not added to the inventory)
             if tile.tile_code == Constants.TileCode.CRAFTING_CHEST.value:
                 event = self.render_crafting.unlock_next_item()
                 self.crafting_update_events.append(event)
 
             else:
-                added_pos = self.render_inventory.auto_add_item(tile.tile_code, 1)
-                event = self.render_inventory.get_item_update_event(added_pos)
-                self.inventory_update_events.append(event)
+
+                items_to_be_added = Constants.TILES_ITEM_MAP[tile.tile_code]
+
+                for item_tile_code in items_to_be_added:
+
+                    added_pos = self.render_inventory.auto_add_item(item_tile_code, 1)
+                    event = self.render_inventory.get_item_update_event(added_pos)
+                    self.inventory_update_events.append(event)
 
 
     def place_tile(self, mouse_pos_raw):
@@ -97,13 +105,18 @@ class WorldChangeManager:
         if not self.render_inventory.is_item_selected():
             return
 
-        tile = self.render_map.get_selected_tile(mouse_pos_raw)
-
         # Can only place new tiles on top of buildable ones
         if tile.tile_code not in Constants.TILES_BUILDABLE:
             return
 
+
         item = self.render_inventory.get_selected_item()
+
+        if item.tile_code not in Constants.ITEMS_PLACEABLE:
+            return
+
+        if item.tile_code in Constants.TILES_THAT_GROW:
+            self.render_map.add_growing_tile(mouse_pos_raw, item.tile_code)
 
         # If no item is selected
         if item.tile_code == '-1':

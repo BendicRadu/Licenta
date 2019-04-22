@@ -1,6 +1,6 @@
-from ui.inventory.ItemStack import Item
+from ui.inventory.ItemStack import ItemStack
 from util import Constants
-
+from ui.inventory.InventoryDao import InventoryDao
 
 # select
 # take_one
@@ -12,10 +12,17 @@ from util import Constants
 class Inventory:
 
     def __init__(self):
-        self.inventory_matrix = InventoryMatrix()
+
+        self.inventory_dao = InventoryDao()
+        self.inventory_matrix = InventoryMatrix(self.inventory_dao.get_all_items())
 
         self.__split_start_pos = None
         self.__split_virtual_item = None
+
+
+    def save(self):
+        item_list = self.get_matrix().get_all_item_list()
+        self.inventory_dao.batch_insert(item_list)
 
 
     def is_item_selected(self):
@@ -45,7 +52,7 @@ class Inventory:
         if add_pos is None:
             return False
 
-        virtual_item = Item(tile_code, quantity, True)
+        virtual_item = ItemStack(tile_code, quantity, True)
 
         return self.inventory_matrix.add_item(virtual_item, add_pos)
 
@@ -123,9 +130,10 @@ class Inventory:
 # Supports pos tuple indexing (pos[0] - i, pos[1] - j)
 class InventoryMatrix:
 
-    def __init__(self):
+    def __init__(self, items):
 
         # TODO store in file
+
 
         self.matrix = []
         self.width = Constants.INVENTORY_MATRIX_WIDTH
@@ -136,11 +144,14 @@ class InventoryMatrix:
         for i in range(self.height):
             row = []
             for j in range(self.width):
-
-                item = Item.get_empty_cell()
+                item = ItemStack.get_empty_cell()
                 row.append(item)
 
             self.matrix.append(row)
+
+
+        for item in items:
+            self.matrix[item.inventory_i][item.inventory_j] = item
 
     def take_one(self, pos):
         return self[pos].take_one()
@@ -199,7 +210,7 @@ class InventoryMatrix:
         return self[self.selected_pos]
 
     def remove_selected_item(self):
-        self[self.selected_pos] = Item.get_empty_cell()
+        self[self.selected_pos] = ItemStack.get_empty_cell()
 
     def __getitem__(self, pos):
         return self.matrix[pos[0]][pos[1]]
@@ -207,8 +218,24 @@ class InventoryMatrix:
     def __setitem__(self, pos, item):
 
         if item.is_empty_cell():
-            self.matrix[pos[0]][pos[1]] = Item.get_empty_cell()
+            self.matrix[pos[0]][pos[1]] = ItemStack.get_empty_cell()
 
         else:
             item.is_virtual = False
             self.matrix[pos[0]][pos[1]] = item
+
+
+    def get_all_item_list(self):
+
+        item_list = []
+
+        for i in range(self.height):
+            for j in range(self.width):
+
+                if self[i, j].is_empty_cell():
+                    continue
+
+                item_stack = self[i, j]
+                item_list.append((item_stack.tile_code, item_stack.quantity, i, j))
+
+        return item_list

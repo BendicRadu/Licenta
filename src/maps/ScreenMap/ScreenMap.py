@@ -1,5 +1,4 @@
 import time
-from threading import Thread
 
 from maps.WorldMap.WorldMap import WorldMap
 from sprites.Tile import Tile
@@ -9,17 +8,31 @@ from util.Singleton import Singleton
 
 class ScreenMap:
 
-    def __init__(self, chunk_offset = Singleton.player.get_chunk_offset(), chunk_pos = Singleton.player.get_local_pos()):
+    def __init__(self):
 
         self.world_map = WorldMap()
 
         self.player = Singleton.player
 
-        self.current_chunk_offset = chunk_offset
-        self.chunk_pos = chunk_pos
+        self.current_chunk_offset = self.get_chunk_offset()
+        self.chunk_pos = self.get_chunk_pos()
+
+        self.tile_growth_service = Singleton.tile_growth_service
+        self.counter = 0
 
         self.matrix = ScreenMapMatrix()
         self.update_tiles()
+
+
+
+    def get_chunk_offset(self):
+        return (self.player.global_y // Constants.TILE_SIZE // Constants.CHUNK_SIZE,
+                self.player.global_x // Constants.TILE_SIZE // Constants.CHUNK_SIZE)
+
+    def get_chunk_pos(self):
+        return (self.player.global_y // Constants.TILE_SIZE % Constants.CHUNK_SIZE,
+                self.player.global_x // Constants.TILE_SIZE % Constants.CHUNK_SIZE)
+
 
     def get_tiles(self):
         return self.matrix
@@ -109,12 +122,7 @@ class ScreenMap:
         mouse_i = mouse_pos[1] // Constants.TILE_SIZE
         mouse_j = mouse_pos[0] // Constants.TILE_SIZE
 
-        global_i, global_j = self.get_player_global_i_j(-Constants.HEIGHT_NO_OF_TILES // 2, -Constants.WIDTH_NO_OF_TILES // 2)
-
-        global_mouse_i = global_i + mouse_i
-        global_mouse_j = global_j + mouse_j
-
-        tile_code = self.world_map.get_tile(global_mouse_i, global_mouse_j)
+        tile_code = self.matrix.get_tile(mouse_i, mouse_j)
 
         return Tile(mouse_i, mouse_j, tile_code)
 
@@ -131,6 +139,32 @@ class ScreenMap:
 
         self.world_map.update_tile(global_mouse_i, global_mouse_j, tile_code)
         self.update_tiles()
+
+    def remove_growing_tile(self, mouse_pos):
+
+        mouse_i = mouse_pos[1] // Constants.TILE_SIZE
+        mouse_j = mouse_pos[0] // Constants.TILE_SIZE
+
+        global_i, global_j = self.get_player_global_i_j(-Constants.HEIGHT_NO_OF_TILES // 2,
+                                                        -Constants.WIDTH_NO_OF_TILES // 2)
+
+        global_mouse_i = global_i + mouse_i
+        global_mouse_j = global_j + mouse_j
+
+        self.tile_growth_service.remove_growing_tile((global_mouse_i, global_mouse_j))
+
+    def place_growing_tile(self, mouse_pos, tile_code):
+
+        mouse_i = mouse_pos[1] // Constants.TILE_SIZE
+        mouse_j = mouse_pos[0] // Constants.TILE_SIZE
+
+        global_i, global_j = self.get_player_global_i_j(-Constants.HEIGHT_NO_OF_TILES // 2,
+                                                        -Constants.WIDTH_NO_OF_TILES // 2)
+
+        global_mouse_i = global_i + mouse_i
+        global_mouse_j = global_j + mouse_j
+
+        self.tile_growth_service.add_growing_tile((global_mouse_i, global_mouse_j), tile_code)
 
     # Returns True if the player was moved
     #         False if the player was not moved
@@ -153,8 +187,6 @@ class ScreenMap:
         diff_i = prev_chunk_pos[0] - self.chunk_pos[0]
         diff_j = prev_chunk_pos[1] - self.chunk_pos[1]
 
-        if diff_i != 0 or diff_j != 0:
-            print(diff_i, diff_j)
 
         if abs(diff_i) == Constants.CHUNK_SIZE - 1 or abs(diff_j) == Constants.CHUNK_SIZE - 1:
             self.update_tiles()
@@ -252,32 +284,94 @@ class ScreenMap:
 
     def apply_effects(self):
 
+        self.counter += 1
+        self.counter %= 60
+
         matrix = self._get_buffered_tile_matrix(1, 1)
 
         for i in range(1, len(matrix) - 1):
             for j in range(1, len(matrix[0]) - 1):
-                # TODO Replace to ore check
 
-                # Center
-                if not matrix[i][j] in Constants.TILES_ORE: continue
-                # Top
-                elif not matrix[i - 1][j] in Constants.TILES_ORE: continue
-                # Top left
-                elif not matrix[i - 1][j - 1] in Constants.TILES_ORE: continue
-                # Top right
-                elif not matrix[i - 1][j + 1] in Constants.TILES_ORE: continue
-                # Bot
-                elif not matrix[i + 1][j] in Constants.TILES_ORE: continue
-                # Bot left
-                elif not matrix[i + 1][j - 1] in Constants.TILES_ORE: continue
-                # Bot tight
-                elif not matrix[i + 1][j + 1] in Constants.TILES_ORE: continue
-                # Left
-                elif not matrix[i][j - 1] in Constants.TILES_ORE: continue
-                # Right
-                elif not matrix[i][j + 1] in Constants.TILES_ORE: continue
+                if matrix[i][j] == Constants.TileCode.GRASS.value:
+                    continue
 
-                self.matrix.set_tile(i - 1, j - 1, "-1")
+                self.apply_rock_fog_of_war(matrix, i, j)
+                self.apply_growing_tiles_growth(matrix, i, j)
+                self.apply_animations(matrix, i, j)
+
+
+
+    def apply_rock_fog_of_war(self, buffered_matrix, i, j):
+
+        matrix = buffered_matrix
+        # Center
+        if not matrix[i][j] in Constants.TILES_ORE:
+            return
+        # Top
+        elif not matrix[i - 1][j] in Constants.TILES_ORE:
+            return
+        # Top left
+        elif not matrix[i - 1][j - 1] in Constants.TILES_ORE:
+            return
+        # Top right
+        elif not matrix[i - 1][j + 1] in Constants.TILES_ORE:
+            return
+        # Bot
+        elif not matrix[i + 1][j] in Constants.TILES_ORE:
+            return
+        # Bot left
+        elif not matrix[i + 1][j - 1] in Constants.TILES_ORE:
+            return
+        # Bot tight
+        elif not matrix[i + 1][j + 1] in Constants.TILES_ORE:
+            return
+        # Left
+        elif not matrix[i][j - 1] in Constants.TILES_ORE:
+            return
+        # Right
+        elif not matrix[i][j + 1] in Constants.TILES_ORE:
+            return
+
+        self.matrix.set_tile(i - 1, j - 1, "-1")
+
+    def apply_growing_tiles_growth(self, buffered_matrix, i, j):
+
+        matrix = buffered_matrix
+
+        # Growing Tiles
+        if matrix[i][j] not in Constants.TILES_THAT_GROW:
+            return
+
+        base_global_i, base_global_j = self.get_player_global_i_j(
+            -Constants.HEIGHT_NO_OF_TILES // 2 - 1,
+            -Constants.WIDTH_NO_OF_TILES // 2 - 1)
+
+        global_i = base_global_i + i
+        global_j = base_global_j + j
+
+        tile_code = self.tile_growth_service.get_tile_code_for_growth_tile((global_i, global_j))
+
+        self.matrix.set_tile(i - 1, j - 1, tile_code)
+
+
+    def apply_animations(self, buffered_matrix, i, j):
+
+        matrix = buffered_matrix
+
+        if matrix[i][j] not in Constants.TILES_ANIMATED:
+            return
+
+        animation_frames = Constants.TILES_ANIMATION_FRAMES[matrix[i][j]]
+        time_per_frame = 60 // animation_frames
+        frame = self.counter // time_per_frame
+
+        if frame != 0:
+
+            tile_code = matrix[i][j] + "_" + str(frame)
+            self.matrix.set_tile(i - 1, j - 1, tile_code)
+
+        else:
+            self.matrix.set_tile(i - 1, j - 1, matrix[i][j])
 
 
 

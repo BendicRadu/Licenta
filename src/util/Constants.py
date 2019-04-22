@@ -6,6 +6,7 @@ from enum import Enum
 from numpy.random.mtrand import randint
 from pygame.rect import Rect
 
+from domain.GrowingTile import TileGrowthRate
 from ui.crafting.CraftingItem import CraftingItem
 
 PERLIN_BUFFER = 2
@@ -43,7 +44,7 @@ HP_BOX_HEIGHT = 5
 
 SIGHT_RADIUS = GAME_SCREEN_WIDTH + 100
 
-PLAYER_SPEED = 4
+PLAYER_SPEED = 5
 
 PLAYER_SCREEN_X = int(GAME_SCREEN_WIDTH / 2 - PLAYER_SIZE / 2)
 PLAYER_SCREEN_Y = int(GAME_SCREEN_HEIGHT / 2 - PLAYER_SIZE / 2)
@@ -67,9 +68,6 @@ SPAWN_CHANCE_LIST = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 
 
 
-CHUNK_MIDDLE_OFFSET_I = 50
-CHUNK_MIDDLE_OFFSET_J = 50
-
 MIDDLE_SCREEN_I = HEIGHT_NO_OF_TILES // 2 // TILE_SIZE
 MIDDLE_SCREEN_J = WIDTH_NO_OF_TILES // 2 // TILE_SIZE
 
@@ -78,9 +76,12 @@ class TileCode(Enum):
     NaN   = '-1'
     GRASS = '0'
     ROCK  = '1'
-    TREE  = '2'
+    TREE  = '8'
     WATER = '4'
     WOOD_FLOOR = '5'
+    WHEAT_SEEDS = '6'
+    WHEAT_GROWING = '6_1'
+    WHEAT = '6_2'
 
     CRAFTING_CHEST = '1000'
 
@@ -107,7 +108,10 @@ TILE_HIT_POINTS= {
     TileCode.ROCK.value: 100,
     TileCode.TREE.value: 50,
     TileCode.WOOD_FLOOR.value: 50,
-    TileCode.CRAFTING_CHEST.value: 200
+    TileCode.CRAFTING_CHEST.value: 200,
+    TileCode.WHEAT_SEEDS.value: 10,
+    TileCode.WHEAT_GROWING.value: 10,
+    TileCode.WHEAT.value: 10
 }
 
 
@@ -118,13 +122,49 @@ class Direction(Enum):
     LEFT  = 2
     RIGHT = 3
 
-
 TILES_WITH_COLLIDERS = ['1', '2', '4', '1000']
 TILES_BUILDABLE = ['0', '4']
-TILES_BREAKABLE = ['1', '2', '5', '1000']
+TILES_BREAKABLE = ['1', '2', '5', '1000', '6', '6_1', '6_2']
 TILES_OPAQUE = ['1', '-1']
-
 TILES_ORE = ['1']
+TILES_THAT_GROW = ['6', '6_1', '6_2']
+
+TILES_ANIMATED = [
+    TileCode.TREE.value,
+    TileCode.TREE.value + "_1",
+    TileCode.TREE.value + "_2",
+    TileCode.TREE.value + "_3",
+    TileCode.TREE.value + "_4"
+]
+
+ITEMS_PLACEABLE = ['1','2','4','5','6']
+
+# TileGrowthRate(no_of_stages, time_between_stages)
+# time_between_stages is measured in minutes
+TILES_GROWTH_STAGES = {
+    TileCode.WHEAT_SEEDS.value: TileGrowthRate(2, 1)
+}
+
+
+# Maps a tile as a key and the items dropped when the tile breaks as a value
+
+TILES_ITEM_MAP = {
+
+    TileCode.ROCK.value: [TileCode.ROCK.value],
+    TileCode.TREE.value: [TileCode.TREE.value],
+    TileCode.WOOD_FLOOR.value: [TileCode.WOOD_FLOOR.value],
+    TileCode.WHEAT_SEEDS.value: [TileCode.WHEAT_SEEDS.value],
+    TileCode.WHEAT_GROWING.value: [TileCode.WHEAT_SEEDS.value],
+    TileCode.WHEAT.value: [TileCode.WHEAT_SEEDS.value, TileCode.WHEAT_SEEDS.value, TileCode.WHEAT.value]
+}
+
+TILES_ANIMATION_FRAMES = {
+
+    # Todo remove
+    TileCode.TREE.value: 5
+
+
+}
 
 # INVENTORY --------------------------------------
 
@@ -204,6 +244,7 @@ def get_tile_code_from_perlin(perlin_value):
 
     k = perlin_value
 
+    # Water
     if k < 260:
 
         object_type = TileCode.WATER.value
@@ -211,16 +252,22 @@ def get_tile_code_from_perlin(perlin_value):
         if 100 < k < 110:
             object_type = TileCode.get_random_tile()
 
+    # Trees
     elif 260 <= k < 270:
         object_type = TileCode.TREE.value
 
-
+    # Grass
     elif 270 <= k < 520:
         object_type = TileCode.get_random_tile()
 
+        if 300 <= k < 320:
+            object_type = TileCode.WHEAT_SEEDS.value
+
+    # Trees
     elif 520 <= k < 700:
         object_type = TileCode.TREE.value
 
+    # Rocks
     else:
         object_type = TileCode.ROCK.value
 

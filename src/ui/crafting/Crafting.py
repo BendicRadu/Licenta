@@ -8,12 +8,13 @@ class Crafting:
     def __init__(self):
 
         self.inventory = Singleton.inventory
-        self.crafting_matrix = CraftingMatrix()
+        self.crafting_matrix = CraftingMatrix(Singleton.player_stats.crafting_items_no)
 
         self.inventory_update_events = []
-
         self.selected_pos = None
 
+    def get_crafting_items_no(self):
+        return self.get_matrix().unlocked_items_no
 
     def select(self, pos):
 
@@ -88,7 +89,7 @@ class Crafting:
 
 class CraftingMatrix:
 
-    def __init__(self):
+    def __init__(self, unlocked_items_no):
         # TODO - change to hardcoded crafting matrix
 
         self.matrix = []
@@ -96,7 +97,7 @@ class CraftingMatrix:
         self.width = Constants.CRAFTING_MATRIX_WIDTH
         self.height = Constants.CRAFTING_MATRIX_HEIGHT
 
-        self.unlocked_items_no = 0
+        self.unlocked_items_no = unlocked_items_no
 
         crafting_item_list = [crafting_item.value for crafting_item in Constants.CraftingItems]
         current_item_index = 0

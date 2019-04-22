@@ -1,10 +1,14 @@
 import csv
 import datetime
 import random
+import time
 from threading import Thread
 
+from domain.GrowingTile import GrowingTile
 from maps.WorldMap.PerlinNoise import banded_perlin_noise
 from util import Constants
+from util.Constants import TileCode
+from util.Singleton import Singleton
 
 
 class Chunk:
@@ -15,6 +19,7 @@ class Chunk:
         self.offset_j = offset_j
 
         self.chunk_mask = ChunkMask()
+        self.tile_growth_service = Singleton.tile_growth_service
 
         self.matrix = []
 
@@ -65,6 +70,8 @@ class Chunk:
                                             Constants.CHUNK_SIZE,
                                             [2, 4, 8, 16, 32, 64], [32, 16, 8, 4, 2, 1])
 
+        growing_tile_batch = []
+
         for i in range(Constants.CHUNK_SIZE):
 
             for j in range(Constants.CHUNK_SIZE):
@@ -72,20 +79,26 @@ class Chunk:
                 perlin_value = int(perlin_matrix[i][j] * 1000)
 
                 if Constants.can_spawn_crafting_chest():
-                    object_type = Constants.TileCode.CRAFTING_CHEST.value
+                    tile_code = Constants.TileCode.CRAFTING_CHEST.value
 
                 else:
-                    object_type = Constants.get_tile_code_from_perlin(perlin_value)
+                    tile_code = Constants.get_tile_code_from_perlin(perlin_value)
 
-                # random_index = random.randint(0, len(Constants.SPAWN_CHANCE_LIST) - 1)
-                # object_type = Constants.SPAWN_CHANCE_LIST[random_index]
+                    if tile_code in Constants.TILES_THAT_GROW:
+                        global_pos = self.get_global_ij((i, j))
+                        growing_tile_batch.append((global_pos[0], global_pos[1], tile_code, int(round(time.time() * 1000))))
 
-                self.matrix[i][j] = str(object_type)
+
+                self.matrix[i][j] = str(tile_code)
 
 
         self.chunk_mask.apply(self.matrix)
 
+        self.add_growing_tiles(growing_tile_batch)
         self.save_chunk()
+
+    def add_growing_tiles(self, growing_tile_batch):
+        self.tile_growth_service.batch_insert(growing_tile_batch)
 
     def save_chunk(self):
 
@@ -105,6 +118,12 @@ class Chunk:
 
     def get_tile(self, pos_tuple):
         return self.matrix[pos_tuple[0]][pos_tuple[1]]
+
+    def get_global_ij(self, pos):
+        return (
+            self.offset_i * Constants.CHUNK_SIZE + pos[0],
+            self.offset_j * Constants.CHUNK_SIZE + pos[1]
+        )
 
 
 class ChunkMask:
