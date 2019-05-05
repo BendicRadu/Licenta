@@ -33,5 +33,6 @@ class TileGrowthCache:
     def add(self, growing_tile):
         self.cache[growing_tile.global_pos] = growing_tile
 
-
+    def remove(self, global_pos):
+        del self.cache[global_pos]
 

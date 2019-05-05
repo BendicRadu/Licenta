@@ -16,6 +16,7 @@ class TileGrowthService:
 
     def remove_growing_tile(self, global_pos):
         self.tile_growth_dao.delete_growing_tile(global_pos)
+        self.tile_growth_cache.remove(global_pos)
 
     # tile_code is used if the growing tile is not in the db
     def get_tile_code_for_growth_tile(self, global_pos):

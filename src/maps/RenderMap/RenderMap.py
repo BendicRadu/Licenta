@@ -5,6 +5,7 @@ from sprites.Player import Player
 from sprites.MapSprite import Sprite
 from sprites.Tile import SelectedTile
 from util import Constants
+from util.Constants import Direction
 from util.Singleton import Singleton
 
 
@@ -38,6 +39,23 @@ class RenderMap:
     def re_apply_effects(self):
         self.screen_map.apply_effects()
 
+    # If the player is on a mover tile, get the speed vector
+    def get_player_auto_move(self):
+
+        tile_under_player = self.get_tile_under_player().tile_code
+
+        if tile_under_player not in Constants.TILES_MOVERS_DIRECTIONS.keys():
+            return None
+
+        direction = Constants.TILES_MOVERS_DIRECTIONS[tile_under_player]
+        speed     = Constants.TILES_MOVERS_SPEEDS[tile_under_player]
+
+        direction_vector = Direction.get_direction_vector(direction)
+        speed_vector = direction_vector[0] * speed, direction_vector[1] * speed
+
+        return speed_vector
+
+
     def get_sprites(self):
 
         tile_matrix = self.screen_map.get_tiles()
@@ -58,7 +76,6 @@ class RenderMap:
         return self.sprite_list
 
     def move_player(self, direction):
-
         if self.validate_direction(direction):
             self.screen_map.move_player(direction)
             self.camera.move_camera(direction)
@@ -156,7 +173,7 @@ class RenderMap:
 
 
     def get_tile_under_player(self):
-        player_pos = self.unapply_camera((Constants.GAME_SCREEN_CENTER_X, Constants.GAME_SCREEN_CENTER_Y))
+        player_pos = self.unapply_camera((Constants.GAME_SCREEN_CENTER_X_RAW, Constants.GAME_SCREEN_CENTER_Y_RAW))
         return self.screen_map.get_selected_tile(player_pos)
 
 

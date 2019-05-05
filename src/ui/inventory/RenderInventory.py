@@ -91,6 +91,14 @@ class RenderInventory:
     def get_selected_item(self):
         return self.inventory.get_selected_item()
 
+    def get_item_update_event_by_mouse_pos(self, mouse_pos):
+        i, j = mouse_pos
+
+        x = j * Constants.INVENTORY_CELL_SIZE + Constants.INVENTORY_TOP_LEFT[0]
+        y = i * Constants.INVENTORY_CELL_SIZE + Constants.INVENTORY_TOP_LEFT[1]
+
+        return self.get_item_update_event((i, j))
+
     def get_item_update_event(self, pos):
 
         i, j = pos
@@ -112,8 +120,25 @@ class RenderInventory:
 
         return InventoryUpdateEvent(cell_x, cell_y, text_x, text_y, item.tile_code, item.quantity)
 
+    def take_one_item(self, mouse_pos):
+        x, y = mouse_pos
+
+        j = (x - Constants.INVENTORY_TOP_LEFT[0]) // Constants.INVENTORY_CELL_SIZE
+        i = (y - Constants.INVENTORY_TOP_LEFT[1]) // Constants.INVENTORY_CELL_SIZE
+
+        self.get_item((i, j)).take_one()
+
+        if self.get_item((i, j)).is_empty():
+            self.remove_item((i, j))
+
+        return self.get_item_update_event((i, j))
+
+
     def remove_selected_item(self):
         self.inventory.remove_selected_item()
+
+    def remove_item(self, pos):
+        self.inventory.remove_item(pos)
 
     def auto_add_item(self, tile_code, quantity):
         return self.inventory.auto_add(tile_code, quantity)
@@ -126,6 +151,17 @@ class RenderInventory:
         i = (y - Constants.INVENTORY_TOP_LEFT[1]) // Constants.INVENTORY_CELL_SIZE
 
         return self.inventory.select((i, j))
+
+    def get_item(self, pos):
+        return self.inventory.get_item(pos)
+
+    def get_item_by_mouse_pos(self, mouse_pos):
+        x, y = mouse_pos
+
+        j = (x - Constants.INVENTORY_TOP_LEFT[0]) // Constants.INVENTORY_CELL_SIZE
+        i = (y - Constants.INVENTORY_TOP_LEFT[1]) // Constants.INVENTORY_CELL_SIZE
+
+        return self.inventory.get_item((i, j))
 
 
 # Holds info about the inventory cell that needs updating

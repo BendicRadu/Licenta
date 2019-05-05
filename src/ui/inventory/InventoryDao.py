@@ -91,8 +91,6 @@ class InventoryDao:
         inventory_i = sqlite_tuple[2]
         inventory_j = sqlite_tuple[3]
 
-        print(inventory_j)
-
-        return ItemStack(tile_code, quantity, inventory_i = inventory_i, inventory_j = inventory_j)
+        return ItemStack(str(tile_code), quantity, inventory_i = inventory_i, inventory_j = inventory_j)
 
 

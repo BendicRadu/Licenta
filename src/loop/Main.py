@@ -1,6 +1,7 @@
 import pygame
 
 from manager.CraftingManager import CraftingManager
+from manager.HungerManager import HungerManager
 from manager.WorldChangeManager import WorldChangeManager
 from maps.RenderMap.RenderMap import RenderMap
 from ui.crafting.RenderCrafting import RenderCrafting
@@ -19,16 +20,19 @@ class MainLoop:
 
         self.world_change_manager = WorldChangeManager(self.render_map, self.render_inventory, self.render_crafting)
         self.crafting_manager     = CraftingManager(self.render_crafting, self.render_inventory)
+        self.hunger_manager       = HungerManager(self.render_inventory)
 
         # List of automatic player moves
         self.player_move_list = []
 
         self.player = Singleton.player
 
+
         self.screen = pygame.display.set_mode(
             (Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT),
-             pygame.FULLSCREEN |pygame.DOUBLEBUF
+             pygame.DOUBLEBUF | pygame.FULLSCREEN
         )
+
 
         self.screen.set_alpha(None)
 
@@ -54,6 +58,9 @@ class MainLoop:
 
         self.show_inventory = True
 
+        self.prev_auto_move_1 = None
+        self.prev_auto_move_2 = None
+
     def run(self):
 
         game_over = False
@@ -75,10 +82,10 @@ class MainLoop:
 
 
         while not game_over:
+
             self.render_map.re_apply_effects()
-
-
             self.world_change_manager.frame_start()
+            self.hunger_manager.hunger_tick()
 
             self.draw_tile_sprites()
             self.draw_selected_tile()
@@ -94,7 +101,7 @@ class MainLoop:
             self.draw_selected_crafting_item()
             self.draw_crafting_button_border()
 
-            self.auto_move_player()
+            self.draw_hunger_bar()
 
             mouse_pos = pygame.mouse.get_pos()
 
@@ -151,7 +158,8 @@ class MainLoop:
 
                             # right mouse button (place tile)
                             elif event.button == 3:
-                                place_tile_pressed = True
+                                self.world_change_manager.place_tile(mouse_pos)
+
 
                         # If not in range, move to tile
                         else:
@@ -159,7 +167,13 @@ class MainLoop:
                                 self.player_move_list = self.render_map.get_move_list_to_tile(mouse_pos)
 
                     elif Constants.INVENTORY_RECT.collidepoint(mouse_pos):
-                        self.selected_inventory_pos = self.render_inventory.select_item(mouse_pos)
+
+                        if event.button == 1:
+                            self.selected_inventory_pos = self.render_inventory.select_item(mouse_pos)
+
+                        elif event.button == 3:
+                            print("YAY")
+                            self.hunger_manager.eat(mouse_pos)
 
                     elif Constants.CRAFTING_RECT.collidepoint(mouse_pos):
                         self.selected_crafting_pos = self.crafting_manager.select_crafting_recepie(mouse_pos)
@@ -192,16 +206,28 @@ class MainLoop:
 
             if dx != 0 or dy != 0:
                 self.player_move_list = []
-                self.render_map.move_player((dx, dy))
 
-            if place_tile_pressed:
-                self.world_change_manager.place_tile(mouse_pos)
+                direction = (dx, dy)
+                auto_move = self.get_player_auto_move()
 
-            elif break_tile_pressed:
+                if auto_move is not None:
+                    direction = Constants.speed_vector_diff(direction, auto_move)
+
+                self.render_map.move_player(direction)
+
+            else:
+                auto_move = self.get_player_auto_move()
+
+                if auto_move is not None:
+                    self.player_move_list = [auto_move]
+
+            self.auto_move_player()
+
+            if break_tile_pressed:
                 self.world_change_manager.break_tile(mouse_pos)
 
-
             self.world_change_manager.frame_end()
+
 
             pygame.display.flip()
             self.clock.tick(60)
@@ -422,7 +448,61 @@ class MainLoop:
         pygame.draw.rect(self.screen, (0, 255, 0), remaining_hp_rect)
 
 
+    def draw_hunger_bar(self):
+
+        hunger_bar = self.hunger_manager.get_hunger_bar_sprite()
+
+        total_hunger_rect = hunger_bar.get_hunger_total_rect()
+        pygame.draw.rect(self.screen, (0, 0, 0), total_hunger_rect)
+
+        remaining_hunger_rect = hunger_bar.get_hunger_left_rect()
+        pygame.draw.rect(self.screen, (0, 255, 0), remaining_hunger_rect)
+
+        hunger_text = str(hunger_bar.current_hunger) + "/" + str(hunger_bar.total_hunger)
+        text_surface = self.ui_font.render(hunger_text, False, (255, 255, 255))
+        self.screen.blit(text_surface, hunger_bar.get_total_hunger_xy())
+
+
     #===================================================================================================================
+
+    def get_player_auto_move(self):
+
+        speed_vector = self.render_map.get_player_auto_move()
+
+        if speed_vector is None:
+            return None
+
+        if self.prev_auto_move_1 is not None and self.prev_auto_move_2 is not None:
+
+            if self.prev_auto_move_2 == self.prev_auto_move_1 == speed_vector:
+                auto_move = self.prev_auto_move_1
+
+            elif self.prev_auto_move_2 == self.prev_auto_move_1 != speed_vector:
+                auto_move = self.prev_auto_move_1
+
+            elif self.prev_auto_move_2 != self.prev_auto_move_1 == speed_vector:
+                auto_move = speed_vector
+
+            else:
+                auto_move = speed_vector
+
+
+
+        elif self.prev_auto_move_1 is not None:
+
+            if self.prev_auto_move_1 == speed_vector:
+                auto_move = self.prev_auto_move_1
+            else:
+                auto_move = speed_vector
+
+        else:
+            auto_move = speed_vector
+
+        self.prev_auto_move_2 = self.prev_auto_move_1
+        self.prev_auto_move_1 = speed_vector
+
+        return auto_move
+
 
     def auto_move_player(self):
 
@@ -437,6 +517,7 @@ class MainLoop:
 
         update_events  = self.world_change_manager.inventory_update_events
         update_events += self.crafting_manager.inventory_update_events
+        update_events += self.hunger_manager.inventory_update_events
 
         self.clear_inventory_events()
 
@@ -488,6 +569,7 @@ class MainLoop:
     def clear_inventory_events(self):
         self.world_change_manager.inventory_update_events = []
         self.crafting_manager.inventory_update_events = []
+        self.hunger_manager.inventory_update_events = []
 
     def clear_required_items_events(self):
         self.crafting_manager.required_items_update_events = []

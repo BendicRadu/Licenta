@@ -99,9 +99,6 @@ class WorldChangeManager:
 
         tile = self.render_map.get_selected_tile(mouse_pos_raw)
 
-        if tile.tile_code in Constants.TILES_BREAKABLE:
-            self.break_tile(mouse_pos_raw)
-
         if not self.render_inventory.is_item_selected():
             return
 

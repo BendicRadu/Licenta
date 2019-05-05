@@ -22,6 +22,7 @@ class Inventory:
 
     def save(self):
         item_list = self.get_matrix().get_all_item_list()
+        self.inventory_dao.clear_table()
         self.inventory_dao.batch_insert(item_list)
 
 
@@ -41,6 +42,9 @@ class Inventory:
 
     def take_one(self):
         return self.inventory_matrix.take_one(self.selected_pos)
+
+    def take_one(self, pos):
+        return self.inventory_matrix.take_one(pos)
 
     def auto_add(self, tile_code, quantity):
 
@@ -103,6 +107,9 @@ class Inventory:
 
         return False
 
+    def remove_one(self, pos):
+        self.inventory_matrix.remove(1, pos)
+
     def remove(self, tile_code, quantity_to_be_removed):
 
         for i in range(self.inventory_matrix.height):
@@ -126,6 +133,9 @@ class Inventory:
 
     def remove_selected_item(self):
         self.inventory_matrix.remove_selected_item()
+
+    def remove_item(self, pos):
+        self.inventory_matrix.remove_item(pos)
 
 # Supports pos tuple indexing (pos[0] - i, pos[1] - j)
 class InventoryMatrix:
@@ -211,6 +221,9 @@ class InventoryMatrix:
 
     def remove_selected_item(self):
         self[self.selected_pos] = ItemStack.get_empty_cell()
+
+    def remove_item(self, pos):
+        self[pos] = ItemStack.get_empty_cell()
 
     def __getitem__(self, pos):
         return self.matrix[pos[0]][pos[1]]

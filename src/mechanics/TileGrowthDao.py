@@ -38,8 +38,6 @@ class TileGrowthDao:
 
 
 
-
-
     def get_connection(self):
         return sqlite3.connect(self.SQL_LITE_FILE_PATH)
 
@@ -103,10 +101,10 @@ class TileGrowthDao:
         connection = self.get_connection()
 
         cursor = connection.cursor()
+
         cursor.execute("DELETE FROM GrowingTile "
                        "WHERE global_i = ? AND global_j = ?",
                        (global_pos[0], global_pos[1]))
-
         self.commit_and_close(connection)
 
 
