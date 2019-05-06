@@ -172,7 +172,6 @@ class MainLoop:
                             self.selected_inventory_pos = self.render_inventory.select_item(mouse_pos)
 
                         elif event.button == 3:
-                            print("YAY")
                             self.hunger_manager.eat(mouse_pos)
 
                     elif Constants.CRAFTING_RECT.collidepoint(mouse_pos):

@@ -470,9 +470,6 @@ def speed_vector_diff(player_vec, tile_vec):
     if d1 == d2:
         return player_vec[0] // 2 + tile_vec[0], player_vec[1] // 2 + tile_vec[1]
 
-    print(player_vec, tile_vec)
-
     x, y = 0, 0
-
 
     return player_vec[0] // 2 + player_vec[0] // 4, player_vec[1] // 2 + player_vec[1] // 4

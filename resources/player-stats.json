@@ -1,8 +1,8 @@
 {
     "crafting_items_no": "3",
-    "global_player_x": "272745",
-    "global_player_y": "248145",
+    "global_player_x": "272555",
+    "global_player_y": "247295",
     "player_hunger": "100",
-    "camera_offset_x": "0",
-    "camera_offset_y": "40"
+    "camera_offset_x": "30",
+    "camera_offset_y": "15"
 }
