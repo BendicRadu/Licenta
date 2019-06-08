@@ -1,4 +1,4 @@
-from util import Constants
+from util import GameVars
 
 
 class TileGrowthCache:
@@ -18,7 +18,7 @@ class TileGrowthCache:
             i_cached = g_pos[0]
             j_cached = g_pos[1]
 
-            if abs(i - i_cached) > Constants.CHUNK_SIZE or abs(j - j_cached) > Constants.CHUNK_SIZE:
+            if abs(i - i_cached) > GameVars.CHUNK_SIZE or abs(j - j_cached) > GameVars.CHUNK_SIZE:
                 to_be_removed.append(g_pos)
 
         for g_pos in to_be_removed:

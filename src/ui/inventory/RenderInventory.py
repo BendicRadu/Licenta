@@ -1,7 +1,7 @@
 from sprites.MapSprite import Sprite
 from sprites.TextSprite import TextSprite
 from ui.inventory.Inventory import Inventory
-from util import Constants
+from util import GameVars
 from util.Singleton import Singleton
 
 
@@ -25,8 +25,8 @@ class RenderInventory:
             for j in range(matrix.width):
                 tile_code = matrix[i, j].tile_code
 
-                x = j * Constants.INVENTORY_CELL_SIZE + Constants.INVENTORY_TOP_LEFT[0]
-                y = i * Constants.INVENTORY_CELL_SIZE + Constants.INVENTORY_TOP_LEFT[1]
+                x = j * GameVars.INVENTORY_CELL_SIZE + GameVars.INVENTORY_TOP_LEFT[0]
+                y = i * GameVars.INVENTORY_CELL_SIZE + GameVars.INVENTORY_TOP_LEFT[1]
 
                 sprite = Sprite(x, y, tile_code)
 
@@ -46,16 +46,16 @@ class RenderInventory:
                 if matrix[i, j].is_empty_cell():
                     continue
 
-                x = j * Constants.INVENTORY_CELL_SIZE \
-                    + Constants.INVENTORY_TOP_LEFT[0] \
-                    + Constants.INVENTORY_CELL_SIZE // 2 \
-                    + Constants.INVENTORY_CELL_SIZE // 6
+                x = j * GameVars.INVENTORY_CELL_SIZE \
+                    + GameVars.INVENTORY_TOP_LEFT[0] \
+                    + GameVars.INVENTORY_CELL_SIZE // 2 \
+                    + GameVars.INVENTORY_CELL_SIZE // 6
 
 
-                y = i * Constants.INVENTORY_CELL_SIZE \
-                    + Constants.INVENTORY_TOP_LEFT[1] \
-                    + Constants.INVENTORY_CELL_SIZE // 2 \
-                    + Constants.INVENTORY_CELL_SIZE // 6
+                y = i * GameVars.INVENTORY_CELL_SIZE \
+                    + GameVars.INVENTORY_TOP_LEFT[1] \
+                    + GameVars.INVENTORY_CELL_SIZE // 2 \
+                    + GameVars.INVENTORY_CELL_SIZE // 6
 
                 sprite = TextSprite(x, y, str(matrix[i, j].quantity))
 
@@ -70,8 +70,8 @@ class RenderInventory:
 
         i, j = pos
 
-        x = j * Constants.INVENTORY_CELL_SIZE + Constants.INVENTORY_TOP_LEFT[0]
-        y = i * Constants.INVENTORY_CELL_SIZE + Constants.INVENTORY_TOP_LEFT[1]
+        x = j * GameVars.INVENTORY_CELL_SIZE + GameVars.INVENTORY_TOP_LEFT[0]
+        y = i * GameVars.INVENTORY_CELL_SIZE + GameVars.INVENTORY_TOP_LEFT[1]
 
         return Sprite(x, y, None)
 
@@ -94,8 +94,8 @@ class RenderInventory:
     def get_item_update_event_by_mouse_pos(self, mouse_pos):
         i, j = mouse_pos
 
-        x = j * Constants.INVENTORY_CELL_SIZE + Constants.INVENTORY_TOP_LEFT[0]
-        y = i * Constants.INVENTORY_CELL_SIZE + Constants.INVENTORY_TOP_LEFT[1]
+        x = j * GameVars.INVENTORY_CELL_SIZE + GameVars.INVENTORY_TOP_LEFT[0]
+        y = i * GameVars.INVENTORY_CELL_SIZE + GameVars.INVENTORY_TOP_LEFT[1]
 
         return self.get_item_update_event((i, j))
 
@@ -103,18 +103,18 @@ class RenderInventory:
 
         i, j = pos
 
-        cell_x = j * Constants.INVENTORY_CELL_SIZE + Constants.INVENTORY_TOP_LEFT[0]
-        cell_y = i * Constants.INVENTORY_CELL_SIZE + Constants.INVENTORY_TOP_LEFT[1]
+        cell_x = j * GameVars.INVENTORY_CELL_SIZE + GameVars.INVENTORY_TOP_LEFT[0]
+        cell_y = i * GameVars.INVENTORY_CELL_SIZE + GameVars.INVENTORY_TOP_LEFT[1]
 
-        text_x = j * Constants.INVENTORY_CELL_SIZE \
-            + Constants.INVENTORY_TOP_LEFT[0] \
-            + Constants.INVENTORY_CELL_SIZE // 2 \
-            + Constants.INVENTORY_CELL_SIZE // 6
+        text_x = j * GameVars.INVENTORY_CELL_SIZE \
+                 + GameVars.INVENTORY_TOP_LEFT[0] \
+                 + GameVars.INVENTORY_CELL_SIZE // 2 \
+                 + GameVars.INVENTORY_CELL_SIZE // 6
 
-        text_y = i * Constants.INVENTORY_CELL_SIZE \
-            + Constants.INVENTORY_TOP_LEFT[1] \
-            + Constants.INVENTORY_CELL_SIZE // 2 \
-            + Constants.INVENTORY_CELL_SIZE // 6
+        text_y = i * GameVars.INVENTORY_CELL_SIZE \
+                 + GameVars.INVENTORY_TOP_LEFT[1] \
+                 + GameVars.INVENTORY_CELL_SIZE // 2 \
+                 + GameVars.INVENTORY_CELL_SIZE // 6
 
         item = self.inventory.get_item(pos)
 
@@ -123,8 +123,8 @@ class RenderInventory:
     def take_one_item(self, mouse_pos):
         x, y = mouse_pos
 
-        j = (x - Constants.INVENTORY_TOP_LEFT[0]) // Constants.INVENTORY_CELL_SIZE
-        i = (y - Constants.INVENTORY_TOP_LEFT[1]) // Constants.INVENTORY_CELL_SIZE
+        j = (x - GameVars.INVENTORY_TOP_LEFT[0]) // GameVars.INVENTORY_CELL_SIZE
+        i = (y - GameVars.INVENTORY_TOP_LEFT[1]) // GameVars.INVENTORY_CELL_SIZE
 
         self.get_item((i, j)).take_one()
 
@@ -147,10 +147,13 @@ class RenderInventory:
 
         x, y = mouse_pos
 
-        j = (x - Constants.INVENTORY_TOP_LEFT[0]) // Constants.INVENTORY_CELL_SIZE
-        i = (y - Constants.INVENTORY_TOP_LEFT[1]) // Constants.INVENTORY_CELL_SIZE
+        j = (x - GameVars.INVENTORY_TOP_LEFT[0]) // GameVars.INVENTORY_CELL_SIZE
+        i = (y - GameVars.INVENTORY_TOP_LEFT[1]) // GameVars.INVENTORY_CELL_SIZE
 
-        return self.inventory.select((i, j))
+        self.inventory.select((i, j))
+
+    def get_selected_pos(self):
+        return self.inventory.get_selected_pos()
 
     def get_item(self, pos):
         return self.inventory.get_item(pos)
@@ -158,8 +161,8 @@ class RenderInventory:
     def get_item_by_mouse_pos(self, mouse_pos):
         x, y = mouse_pos
 
-        j = (x - Constants.INVENTORY_TOP_LEFT[0]) // Constants.INVENTORY_CELL_SIZE
-        i = (y - Constants.INVENTORY_TOP_LEFT[1]) // Constants.INVENTORY_CELL_SIZE
+        j = (x - GameVars.INVENTORY_TOP_LEFT[0]) // GameVars.INVENTORY_CELL_SIZE
+        i = (y - GameVars.INVENTORY_TOP_LEFT[1]) // GameVars.INVENTORY_CELL_SIZE
 
         return self.inventory.get_item((i, j))
 

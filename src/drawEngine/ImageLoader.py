@@ -1,6 +1,6 @@
 import pygame as pygame
 
-from util import Constants
+from util import GameVars
 
 
 class ImageLoader:
@@ -28,7 +28,7 @@ class ImageLoader:
         self.init_non_visible_tile()
 
     def init_non_visible_tile(self):
-        surface = pygame.Surface((Constants.TILE_SIZE, Constants.TILE_SIZE))
+        surface = pygame.Surface((GameVars.TILE_SIZE, GameVars.TILE_SIZE))
         surface.fill((0, 0, 0), surface.get_rect())
 
         self.non_visible_tile = surface
@@ -36,19 +36,19 @@ class ImageLoader:
     def init_player_images(self):
         down = pygame.image.load(self.PLAYER_IMAGE_PATH + "0.png")
         down.convert()
-        down = pygame.transform.scale(down, (Constants.PLAYER_SIZE, Constants.PLAYER_SIZE))
+        down = pygame.transform.scale(down, (GameVars.PLAYER_SIZE, GameVars.PLAYER_SIZE))
 
         up = pygame.image.load(self.PLAYER_IMAGE_PATH + "1.png")
         up.convert()
-        up = pygame.transform.scale(up, (Constants.PLAYER_SIZE, Constants.PLAYER_SIZE))
+        up = pygame.transform.scale(up, (GameVars.PLAYER_SIZE, GameVars.PLAYER_SIZE))
 
         left = pygame.image.load(self.PLAYER_IMAGE_PATH + "2.png")
         left.convert()
-        left = pygame.transform.scale(left, (Constants.PLAYER_SIZE, Constants.PLAYER_SIZE))
+        left = pygame.transform.scale(left, (GameVars.PLAYER_SIZE, GameVars.PLAYER_SIZE))
 
         right = pygame.image.load(self.PLAYER_IMAGE_PATH + "3.png")
         right.convert()
-        right = pygame.transform.scale(right, (Constants.PLAYER_SIZE, Constants.PLAYER_SIZE))
+        right = pygame.transform.scale(right, (GameVars.PLAYER_SIZE, GameVars.PLAYER_SIZE))
 
         self.player_images.append(down)
         self.player_images.append(up)
@@ -58,18 +58,17 @@ class ImageLoader:
     def init_ui(self):
         ui_background = pygame.image.load(self.UI_IMAGE_PATH + "ui_background.png")
         ui_background.convert()
-        ui_background = pygame.transform.scale(ui_background, (Constants.UI_WIDTH, Constants.UI_HEIGHT))
+        ui_background = pygame.transform.scale(ui_background, (GameVars.UI_WIDTH, GameVars.UI_HEIGHT))
 
         self.ui_background = ui_background
 
     def init_required_items_background(self):
 
         picture = pygame.image.load(self.UI_IMAGE_PATH + "-1.png")
-        picture = pygame.transform.scale(picture, (
-            Constants.REQUIRED_ITEMS_SCREEN_WIDTH, Constants.REQUIRED_ITEMS_SCREEN_HEIGHT))
+        picture = pygame.transform.scale(picture, (GameVars.REQUIRED_ITEMS_SCREEN_WIDTH, GameVars.REQUIRED_ITEMS_SCREEN_HEIGHT))
         picture.convert()
 
-        surface = pygame.Surface((Constants.REQUIRED_ITEMS_SCREEN_WIDTH, Constants.REQUIRED_ITEMS_SCREEN_HEIGHT))
+        surface = pygame.Surface((GameVars.REQUIRED_ITEMS_SCREEN_WIDTH, GameVars.REQUIRED_ITEMS_SCREEN_HEIGHT))
         surface.blit(picture, picture.get_rect())
 
         self.required_items_background = surface
@@ -80,9 +79,9 @@ class ImageLoader:
         if tile_code not in self.world_image_map.keys():
             picture = pygame.image.load(self.WORLD_IMAGE_PATH + str(tile_code) + ".png")
             picture.convert()
-            picture = pygame.transform.scale(picture, (Constants.TILE_SIZE, Constants.TILE_SIZE))
+            picture = pygame.transform.scale(picture, (GameVars.TILE_SIZE, GameVars.TILE_SIZE))
 
-            surface = pygame.Surface((Constants.TILE_SIZE, Constants.TILE_SIZE))
+            surface = pygame.Surface((GameVars.TILE_SIZE, GameVars.TILE_SIZE))
             surface.blit(picture, picture.get_rect())
 
             self.world_image_map[tile_code] = surface
@@ -96,10 +95,10 @@ class ImageLoader:
 
         if tile_code not in self.inventory_image_map.keys():
             picture = pygame.image.load(self.UI_IMAGE_PATH + str(tile_code) + ".png")
-            picture = pygame.transform.scale(picture, (Constants.INVENTORY_CELL_SIZE, Constants.INVENTORY_CELL_SIZE))
+            picture = pygame.transform.scale(picture, (GameVars.INVENTORY_CELL_SIZE, GameVars.INVENTORY_CELL_SIZE))
             picture.convert()
 
-            surface = pygame.Surface((Constants.INVENTORY_CELL_SIZE, Constants.INVENTORY_CELL_SIZE))
+            surface = pygame.Surface((GameVars.INVENTORY_CELL_SIZE, GameVars.INVENTORY_CELL_SIZE))
             surface.blit(picture, picture.get_rect())
 
             self.inventory_image_map[tile_code] = surface

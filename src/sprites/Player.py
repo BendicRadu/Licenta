@@ -1,5 +1,5 @@
-from util import Constants
-from util.Constants import Direction
+from util import GameVars
+from util.GameVars import Direction
 
 
 class Player:
@@ -42,11 +42,11 @@ class Player:
                self.global_y + direction[1]
 
     def get_chunk_offset(self):
-        return self.global_x // Constants.TILE_SIZE // Constants.CHUNK_SIZE, \
-               self.global_x // Constants.TILE_SIZE // Constants.CHUNK_SIZE
+        return self.global_x // GameVars.TILE_SIZE // GameVars.CHUNK_SIZE, \
+               self.global_x // GameVars.TILE_SIZE // GameVars.CHUNK_SIZE
 
     def get_local_pos(self):
-        return self.global_y // Constants.TILE_SIZE % Constants.CHUNK_SIZE, \
-               self.global_x // Constants.TILE_SIZE % Constants.CHUNK_SIZE
+        return self.global_y // GameVars.TILE_SIZE % GameVars.CHUNK_SIZE, \
+               self.global_x // GameVars.TILE_SIZE % GameVars.CHUNK_SIZE
 
 

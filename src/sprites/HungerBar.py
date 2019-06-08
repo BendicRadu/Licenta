@@ -1,6 +1,6 @@
 import pygame
 
-from util import Constants
+from util import GameVars
 
 
 class HungerBar:
@@ -12,12 +12,12 @@ class HungerBar:
         self.total_hunger = total_hunger
 
     def get_hunger_left_rect(self):
-        remaining_hunger_rect_width = self.current_hunger * Constants.HUNGER_BAR_WIDTH / self.total_hunger
-        return pygame.Rect(self.x, self.y, remaining_hunger_rect_width, Constants.HUNGER_BAR_HEIGHT)
+        remaining_hunger_rect_width = self.current_hunger * GameVars.HUNGER_BAR_WIDTH / self.total_hunger
+        return pygame.Rect(self.x, self.y, remaining_hunger_rect_width, GameVars.HUNGER_BAR_HEIGHT)
 
     def get_hunger_total_rect(self):
-        return pygame.Rect(self.x, self.y, Constants.HUNGER_BAR_WIDTH, Constants.HUNGER_BAR_HEIGHT)
+        return pygame.Rect(self.x, self.y, GameVars.HUNGER_BAR_WIDTH, GameVars.HUNGER_BAR_HEIGHT)
 
 
     def get_total_hunger_xy(self):
-        return self.x + (Constants.HUNGER_BAR_WIDTH // 2) - 15, self.y
+        return self.x + (GameVars.HUNGER_BAR_WIDTH // 2) - 15, self.y

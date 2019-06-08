@@ -2,12 +2,9 @@ import csv
 import datetime
 import random
 import time
-from threading import Thread
 
-from domain.GrowingTile import GrowingTile
-from maps.WorldMap.PerlinNoise import banded_perlin_noise
-from util import Constants
-from util.Constants import TileCode
+from maps.WorldMap.ChunkGeneration import PerlinNoiseGenerator
+from util import GameVars
 from util.Singleton import Singleton
 
 
@@ -20,6 +17,7 @@ class Chunk:
 
         self.chunk_mask = ChunkMask()
         self.tile_growth_service = Singleton.tile_growth_service
+        self.generator = PerlinNoiseGenerator()
 
         self.matrix = []
 
@@ -55,9 +53,9 @@ class Chunk:
 
         self.matrix = []
 
-        for i in range(Constants.CHUNK_SIZE):
+        for i in range(GameVars.CHUNK_SIZE):
             row = []
-            for j in range(Constants.CHUNK_SIZE):
+            for j in range(GameVars.CHUNK_SIZE):
                 row.append(None)
 
             self.matrix.append(row)
@@ -66,25 +64,23 @@ class Chunk:
 
         self._init_matrix()
 
-        perlin_matrix = banded_perlin_noise(Constants.CHUNK_SIZE,
-                                            Constants.CHUNK_SIZE,
-                                            [2, 4, 8, 16, 32, 64], [32, 16, 8, 4, 2, 1])
+        generation_matrix = self.generator.generate_chunk_matrix()
 
         growing_tile_batch = []
 
-        for i in range(Constants.CHUNK_SIZE):
+        for i in range(GameVars.CHUNK_SIZE):
 
-            for j in range(Constants.CHUNK_SIZE):
+            for j in range(GameVars.CHUNK_SIZE):
 
-                perlin_value = int(perlin_matrix[i][j] * 1000)
+                generation_value = int(generation_matrix[i][j] * 1000)
 
-                if Constants.can_spawn_crafting_chest():
-                    tile_code = Constants.TileCode.CRAFTING_CHEST.value
+                if GameVars.can_spawn_crafting_chest():
+                    tile_code = GameVars.TileCode.CRAFTING_CHEST.value
 
                 else:
-                    tile_code = Constants.get_tile_code_from_perlin(perlin_value)
+                    tile_code = GameVars.get_tile_code_from_generation_value(generation_value)
 
-                    if tile_code in Constants.TILES_THAT_GROW:
+                    if tile_code in GameVars.TILES_THAT_GROW:
                         global_pos = self.get_global_ij((i, j))
                         growing_tile_batch.append((global_pos[0], global_pos[1], tile_code, int(round(time.time() * 1000))))
 
@@ -121,8 +117,8 @@ class Chunk:
 
     def get_global_ij(self, pos):
         return (
-            self.offset_i * Constants.CHUNK_SIZE + pos[0],
-            self.offset_j * Constants.CHUNK_SIZE + pos[1]
+            self.offset_i * GameVars.CHUNK_SIZE + pos[0],
+            self.offset_j * GameVars.CHUNK_SIZE + pos[1]
         )
 
 
@@ -135,10 +131,10 @@ class ChunkMask:
 
     def init_mask(self):
 
-        for i in range(Constants.CHUNK_SIZE):
+        for i in range(GameVars.CHUNK_SIZE):
             row = []
 
-            for j in range(Constants.CHUNK_SIZE):
+            for j in range(GameVars.CHUNK_SIZE):
 
                 if self.is_tile_in_circle(i, j) or self.modifier():
                     row.append(False)
@@ -154,10 +150,10 @@ class ChunkMask:
     # n - resolution
     def is_tile_in_circle(self, i, j):
 
-        x = ((j - Constants.CHUNK_SIZE // 2) * Constants.TILE_SIZE) + Constants.TILE_SIZE / 2
-        y = ((Constants.CHUNK_SIZE - (i + Constants.CHUNK_SIZE // 2)) * Constants.TILE_SIZE) + Constants.TILE_SIZE / 2
+        x = ((j - GameVars.CHUNK_SIZE // 2) * GameVars.TILE_SIZE) + GameVars.TILE_SIZE / 2
+        y = ((GameVars.CHUNK_SIZE - (i + GameVars.CHUNK_SIZE // 2)) * GameVars.TILE_SIZE) + GameVars.TILE_SIZE / 2
 
-        radius = (Constants.CHUNK_SIZE - 10) * Constants.TILE_SIZE
+        radius = (GameVars.CHUNK_SIZE - 10) * GameVars.TILE_SIZE
 
         return abs(x) + abs(y) < radius
 
@@ -165,11 +161,11 @@ class ChunkMask:
     def apply(self, map_matrix):
 
 
-        for i in range(Constants.CHUNK_SIZE):
-            for j in range(Constants.CHUNK_SIZE):
+        for i in range(GameVars.CHUNK_SIZE):
+            for j in range(GameVars.CHUNK_SIZE):
 
                 if self.mask[i][j]:
-                    map_matrix[i][j] = str(Constants.spawn_tile())
+                    map_matrix[i][j] = str(GameVars.spawn_tile())
 
 
     def modifier(self):

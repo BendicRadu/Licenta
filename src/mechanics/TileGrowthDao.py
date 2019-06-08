@@ -10,8 +10,6 @@ class TileGrowthDao:
     def __init__(self):
         self.SQL_LITE_FILE_PATH = "C:\\Licenta\\Licenta\\resources\\sqlLite\\db.sqlite"
 
-        # TODO change to SQL Lite
-
         connection = self.get_connection()
         cursor = connection.cursor()
 
@@ -25,8 +23,6 @@ class TileGrowthDao:
 
 
         self.commit_and_close(connection)
-
-        # TODO remove
 
         file_path = "C:\\Licenta\\Licenta\\resources\\WorldMap\\50-50-chunk.txt"
 

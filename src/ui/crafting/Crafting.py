@@ -1,5 +1,5 @@
 from ui.crafting.CraftingItem import CraftingItem
-from util import Constants
+from util import GameVars
 from util.Singleton import Singleton
 
 
@@ -17,13 +17,13 @@ class Crafting:
         return self.get_matrix().unlocked_items_no
 
     def select(self, pos):
-
         if self.get_matrix()[pos].is_empty_cell() or self.get_matrix()[pos].is_locked():
             self.selected_pos = None
-            return None
 
         self.selected_pos = pos
-        return pos
+
+    def get_selected_pos(self):
+        return self.selected_pos
 
     def get_selected(self):
 
@@ -94,12 +94,12 @@ class CraftingMatrix:
 
         self.matrix = []
 
-        self.width = Constants.CRAFTING_MATRIX_WIDTH
-        self.height = Constants.CRAFTING_MATRIX_HEIGHT
+        self.width = GameVars.CRAFTING_MATRIX_WIDTH
+        self.height = GameVars.CRAFTING_MATRIX_HEIGHT
 
         self.unlocked_items_no = unlocked_items_no
 
-        crafting_item_list = [crafting_item.value for crafting_item in Constants.CraftingItems]
+        crafting_item_list = [crafting_item.value for crafting_item in GameVars.CraftingItems]
         current_item_index = 0
 
         for i in range(self.height):

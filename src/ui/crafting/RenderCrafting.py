@@ -1,7 +1,7 @@
 from sprites.MapSprite import Sprite
 from sprites.TextSprite import TextSprite
 from ui.crafting.Crafting import Crafting
-from util import Constants
+from util import GameVars
 
 
 class RenderCrafting:
@@ -26,8 +26,8 @@ class RenderCrafting:
                 if tile_code != '-1' and not matrix[i, j].unlocked:
                     tile_code = '1000'
 
-                x = j * Constants.CRAFTING_CELL_SIZE + Constants.CRAFTING_TOP_LEFT[0]
-                y = i * Constants.CRAFTING_CELL_SIZE + Constants.CRAFTING_TOP_LEFT[1]
+                x = j * GameVars.CRAFTING_CELL_SIZE + GameVars.CRAFTING_TOP_LEFT[0]
+                y = i * GameVars.CRAFTING_CELL_SIZE + GameVars.CRAFTING_TOP_LEFT[1]
 
                 sprite = Sprite(x, y, tile_code)
 
@@ -46,14 +46,15 @@ class RenderCrafting:
         return self.crafting.can_craft()
 
     def select_item(self, mouse_pos):
-
         x, y = mouse_pos
 
-        j = (x - Constants.CRAFTING_TOP_LEFT[0]) // Constants.CRAFTING_CELL_SIZE
-        i = (y - Constants.CRAFTING_TOP_LEFT[1]) // Constants.CRAFTING_CELL_SIZE
+        j = (x - GameVars.CRAFTING_TOP_LEFT[0]) // GameVars.CRAFTING_CELL_SIZE
+        i = (y - GameVars.CRAFTING_TOP_LEFT[1]) // GameVars.CRAFTING_CELL_SIZE
 
-        return self.crafting.select((i, j))
+        self.crafting.select((i, j))
 
+    def get_selected_pos(self):
+        return self.crafting.selected_pos
 
     def get_selected(self):
         return self.crafting.get_selected()
@@ -65,8 +66,8 @@ class RenderCrafting:
 
         i, j = pos
 
-        x = j * Constants.CRAFTING_CELL_SIZE + Constants.CRAFTING_TOP_LEFT[0]
-        y = i * Constants.CRAFTING_CELL_SIZE + Constants.CRAFTING_TOP_LEFT[1]
+        x = j * GameVars.CRAFTING_CELL_SIZE + GameVars.CRAFTING_TOP_LEFT[0]
+        y = i * GameVars.CRAFTING_CELL_SIZE + GameVars.CRAFTING_TOP_LEFT[1]
 
         return Sprite(x, y, None)
 
@@ -77,8 +78,8 @@ class RenderCrafting:
         if crafting_item is None:
             return []
 
-        offset_x = Constants.REQUIRED_ITEMS_TOP_LEFT[0]
-        y        = Constants.REQUIRED_ITEMS_TOP_LEFT[1]
+        offset_x = GameVars.REQUIRED_ITEMS_TOP_LEFT[0]
+        y        = GameVars.REQUIRED_ITEMS_TOP_LEFT[1]
         sprites = []
 
         for required_item in crafting_item.crafting_items_required.keys():
@@ -88,7 +89,7 @@ class RenderCrafting:
 
             sprites.append(sprite)
 
-            offset_x += Constants.REQUIRED_ITEMS_CELL_SIZE
+            offset_x += GameVars.REQUIRED_ITEMS_CELL_SIZE
 
 
         return sprites
@@ -100,8 +101,8 @@ class RenderCrafting:
         if crafting_item is None:
             return []
 
-        offset_x = Constants.REQUIRED_ITEMS_TOP_LEFT[0] + Constants.REQUIRED_ITEMS_CELL_SIZE - 20
-        y = Constants.REQUIRED_ITEMS_TOP_LEFT[1] + Constants.REQUIRED_ITEMS_CELL_SIZE - 20
+        offset_x = GameVars.REQUIRED_ITEMS_TOP_LEFT[0] + GameVars.REQUIRED_ITEMS_CELL_SIZE - 20
+        y = GameVars.REQUIRED_ITEMS_TOP_LEFT[1] + GameVars.REQUIRED_ITEMS_CELL_SIZE - 20
         sprites = []
 
         for required_item in crafting_item.crafting_items_required.keys():
@@ -113,18 +114,18 @@ class RenderCrafting:
 
             sprites.append(sprite)
 
-            offset_x += Constants.REQUIRED_ITEMS_CELL_SIZE
+            offset_x += GameVars.REQUIRED_ITEMS_CELL_SIZE
 
         return sprites
 
 
     def get_blank_required_items(self):
 
-        offset_x = Constants.REQUIRED_ITEMS_TOP_LEFT[0]
-        y = Constants.REQUIRED_ITEMS_TOP_LEFT[1]
+        offset_x = GameVars.REQUIRED_ITEMS_TOP_LEFT[0]
+        y = GameVars.REQUIRED_ITEMS_TOP_LEFT[1]
         sprites = []
 
-        width = Constants.REQUIRED_ITEMS_WIDTH
+        width = GameVars.REQUIRED_ITEMS_WIDTH
 
         while len(sprites) < width:
 
@@ -133,14 +134,14 @@ class RenderCrafting:
 
             sprites.append(sprite)
 
-            offset_x += Constants.REQUIRED_ITEMS_CELL_SIZE
+            offset_x += GameVars.REQUIRED_ITEMS_CELL_SIZE
 
         return sprites
 
     def get_crafting_button_sprite(self):
 
-        x = Constants.CRAFT_BUTTON_TOP_LEFT[0]
-        y = Constants.CRAFT_BUTTON_TOP_LEFT[1]
+        x = GameVars.CRAFT_BUTTON_TOP_LEFT[0]
+        y = GameVars.CRAFT_BUTTON_TOP_LEFT[1]
 
         return Sprite(x, y, '1')
 
@@ -156,8 +157,8 @@ class RenderCrafting:
 
         i, j = unlocked_pos
 
-        x = j * Constants.CRAFTING_CELL_SIZE + Constants.CRAFTING_TOP_LEFT[0]
-        y = i * Constants.CRAFTING_CELL_SIZE + Constants.CRAFTING_TOP_LEFT[1]
+        x = j * GameVars.CRAFTING_CELL_SIZE + GameVars.CRAFTING_TOP_LEFT[0]
+        y = i * GameVars.CRAFTING_CELL_SIZE + GameVars.CRAFTING_TOP_LEFT[1]
 
         return CraftingUpdateEvent(x, y, tile_code)
 

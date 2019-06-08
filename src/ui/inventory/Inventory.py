@@ -1,5 +1,5 @@
 from ui.inventory.ItemStack import ItemStack
-from util import Constants
+from util import GameVars
 from ui.inventory.InventoryDao import InventoryDao
 
 # select
@@ -30,12 +30,13 @@ class Inventory:
         return self.inventory_matrix.selected_pos is not None
 
     def select(self, pos):
-
         if self.inventory_matrix[pos].is_empty_cell():
-            return None
+            self.inventory_matrix.selected_pos = None
 
         self.inventory_matrix.selected_pos = pos
-        return pos
+
+    def get_selected_pos(self):
+        return self.inventory_matrix.selected_pos
 
     def get_item(self, pos):
         return self.inventory_matrix[pos]
@@ -146,8 +147,8 @@ class InventoryMatrix:
 
 
         self.matrix = []
-        self.width = Constants.INVENTORY_MATRIX_WIDTH
-        self.height = Constants.INVENTORY_MATRIX_HEIGHT
+        self.width = GameVars.INVENTORY_MATRIX_WIDTH
+        self.height = GameVars.INVENTORY_MATRIX_HEIGHT
 
         self.selected_pos = None
 

@@ -1,6 +1,6 @@
 import datetime
 
-from util import Constants
+from util import GameVars
 
 
 class GrowingTile:

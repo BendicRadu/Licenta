@@ -2,7 +2,7 @@ import datetime
 
 from mechanics.TileGrowthCache import TileGrowthCache
 from mechanics.TileGrowthDao import TileGrowthDao
-from util import Constants
+from util import GameVars
 
 
 class TileGrowthService:
@@ -30,7 +30,7 @@ class TileGrowthService:
         tile_code    = growth_tile.tile_code
         created_time = growth_tile.created_timestamp
 
-        growth_rate = Constants.TILES_GROWTH_STAGES[tile_code]
+        growth_rate = GameVars.TILES_GROWTH_STAGES[tile_code]
 
         no_of_stages          = growth_rate.no_of_stages
         time_between_stages   = growth_rate.time_between_stages

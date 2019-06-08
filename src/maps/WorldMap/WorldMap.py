@@ -1,7 +1,7 @@
 import datetime
 
 from maps.WorldMap.Chunk import Chunk
-from util import Constants
+from util import GameVars
 
 class WorldMap:
 
@@ -13,10 +13,10 @@ class WorldMap:
 
 
     def get_chunk_offset(self, i, j):
-        return i // Constants.CHUNK_SIZE, j // Constants.CHUNK_SIZE
+        return i // GameVars.CHUNK_SIZE, j // GameVars.CHUNK_SIZE
 
     def get_chunk_pos(self, i, j):
-        return i % Constants.CHUNK_SIZE, j % Constants.CHUNK_SIZE
+        return i % GameVars.CHUNK_SIZE, j % GameVars.CHUNK_SIZE
 
     def get_tile(self, i, j):
 

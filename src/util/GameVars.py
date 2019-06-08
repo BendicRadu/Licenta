@@ -170,15 +170,54 @@ TILE_HIT_POINTS = {
     TileCode.CRAFTING_CHEST.value: 200,
     TileCode.WHEAT_SEEDS.value: 10,
     TileCode.WHEAT_GROWING.value: 10,
-    TileCode.WHEAT.value: 10
+    TileCode.WHEAT.value: 10,
+
+    TileCode.MOVER_RIGHT.value: 1,
+    TileCode.MOVER_RIGHT.value + "_1": 1,
+    TileCode.MOVER_RIGHT.value + "_2": 1,
+    TileCode.MOVER_RIGHT.value + "_3": 1,
+    TileCode.MOVER_RIGHT.value + "_4": 1,
+
+    TileCode.MOVER_LEFT.value: 1,
+    # TODO add rest
+
+    TileCode.MOVER_UP.value: 1,
+    # TODO add rest
+
+    TileCode.MOVER_DOWN.value: 1
+    # TODO add rest
 }
 
-TILES_WITH_COLLIDERS = ['1', '2', '4', '1000']
-TILES_BUILDABLE = ['0', '4']
-TILES_BREAKABLE = ['1', '2', '5', '1000', '6', '6_1', '6_2']
-TILES_OPAQUE = ['1', '-1']
-TILES_ORE = ['1']
-TILES_THAT_GROW = ['6', '6_1', '6_2']
+TILES_WITH_COLLIDERS = [
+    TileCode.ROCK.value,
+    TileCode.TREE.value,
+    TileCode.WATER.value,
+    TileCode.CRAFTING_CHEST.value
+]
+
+TILES_BUILDABLE = [
+    TileCode.GRASS.value,
+    TileCode.WATER.value
+]
+
+NaN = '-1'
+GRASS = '0'
+ROCK = '1'
+TREE = '2'
+WATER = '4'
+WOOD_FLOOR = '5'
+WHEAT_SEEDS = '6'
+WHEAT_GROWING = '6_1'
+WHEAT = '6_2'
+BREAD = '7'
+
+MOVER_RIGHT = '8'
+MOVER_LEFT = '9'
+MOVER_UP = '10'
+MOVER_DOWN = '11'
+
+CRAFTING_CHEST = '1000'
+
 
 TILES_ANIMATED = [
 
@@ -197,6 +236,24 @@ TILES_ANIMATED = [
     TileCode.MOVER_DOWN
     # TODO add rest
 ]
+
+
+TILES_BREAKABLE = [
+    TileCode.ROCK.value,
+    TileCode.TREE.value,
+    TileCode.WOOD_FLOOR.value,
+    TileCode.CRAFTING_CHEST.value,
+    TileCode.WHEAT_SEEDS.value,
+    TileCode.WHEAT_GROWING.value,
+    TileCode.WHEAT.value,
+]
+
+TILES_BREAKABLE.extend(TILES_ANIMATED)
+
+TILES_OPAQUE = [TileCode.ROCK.value, TileCode.NaN.value]
+TILES_ORE = [TileCode.ROCK.value]
+TILES_THAT_GROW = [TileCode.WHEAT_SEEDS, TileCode.WHEAT_GROWING, TileCode.WHEAT]
+
 
 
 TILES_ANIMATION_FRAMES = {
@@ -260,8 +317,16 @@ FOOD_VALUES = {
     TileCode.BREAD.value: 10
 }
 
-
-ITEMS_PLACEABLE = ['1', '2', '4', '5', '6']
+ITEMS_PLACEABLE = [
+    TileCode.ROCK.value,
+    TileCode.TREE.value,
+    TileCode.WOOD_FLOOR.value,
+    TileCode.WHEAT_SEEDS.value,
+    TileCode.MOVER_RIGHT.value,
+    TileCode.MOVER_LEFT.value,
+    TileCode.MOVER_UP.value,
+    TileCode.MOVER_DOWN.value
+]
 
 # TileGrowthRate(no_of_stages, time_between_stages)
 # time_between_stages is measured in minutes
@@ -278,7 +343,21 @@ TILES_ITEM_MAP = {
     TileCode.WOOD_FLOOR.value: [TileCode.WOOD_FLOOR.value],
     TileCode.WHEAT_SEEDS.value: [TileCode.WHEAT_SEEDS.value],
     TileCode.WHEAT_GROWING.value: [TileCode.WHEAT_SEEDS.value],
-    TileCode.WHEAT.value: [TileCode.WHEAT_SEEDS.value, TileCode.WHEAT_SEEDS.value, TileCode.WHEAT.value]
+    TileCode.WHEAT.value: [TileCode.WHEAT_SEEDS.value, TileCode.WHEAT_SEEDS.value, TileCode.WHEAT.value],
+
+    TileCode.MOVER_RIGHT.value: [TileCode.MOVER_RIGHT.value],
+    TileCode.MOVER_RIGHT.value + "_1": [TileCode.MOVER_RIGHT.value],
+    TileCode.MOVER_RIGHT.value + "_2": [TileCode.MOVER_RIGHT.value],
+    TileCode.MOVER_RIGHT.value + "_3": [TileCode.MOVER_RIGHT.value],
+    TileCode.MOVER_RIGHT.value + "_4": [TileCode.MOVER_RIGHT.value],
+
+    TileCode.MOVER_LEFT: [TileCode.MOVER_LEFT],
+    # TODO Add rest
+    TileCode.MOVER_UP: [TileCode.MOVER_UP],
+    # TODO Add rest
+    TileCode.MOVER_DOWN: [TileCode.MOVER_DOWN]
+    # TODO Add rest
+
 }
 
 # INVENTORY --------------------------------------
@@ -367,8 +446,8 @@ def get_random_mover():
     return movers[i]
 
 
-def get_tile_code_from_perlin(perlin_value):
-    k = perlin_value
+def get_tile_code_from_generation_value(generation_value):
+    k = generation_value
 
     # Water
     if k < 260:

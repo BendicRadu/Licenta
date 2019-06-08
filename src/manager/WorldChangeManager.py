@@ -4,7 +4,7 @@ from maps.RenderMap.RenderMap import RenderMap
 from sprites.HpRect import HpRect
 from ui.crafting.RenderCrafting import RenderCrafting
 from ui.inventory.RenderInventory import RenderInventory
-from util import Constants
+from util import GameVars
 from util.Singleton import Singleton
 
 
@@ -40,7 +40,7 @@ class WorldChangeManager:
     def is_selected_tile_breakable(self, mouse_pos_raw):
         tile = self.render_map.get_selected_tile(mouse_pos_raw)
 
-        return tile.tile_code in Constants.TILES_BREAKABLE
+        return tile.tile_code in GameVars.TILES_BREAKABLE
 
 
     def break_tile(self, mouse_pos_raw):
@@ -52,7 +52,7 @@ class WorldChangeManager:
 
         tile = self.render_map.get_selected_tile(mouse_pos_raw)
 
-        if tile.tile_code in Constants.TILES_BUILDABLE:
+        if tile.tile_code in GameVars.TILES_BUILDABLE:
             self.__reset_tile_to_break()
             return
 
@@ -60,7 +60,7 @@ class WorldChangeManager:
 
         if self.tile_to_break != tile:
             self.tile_to_break = tile
-            self.tile_to_break_thoughness = Constants.TILE_HIT_POINTS[tile.tile_code]
+            self.tile_to_break_thoughness = GameVars.TILE_HIT_POINTS[tile.tile_code]
             self.is_breaking = True
 
         self.tile_to_break_thoughness -= 1
@@ -71,17 +71,17 @@ class WorldChangeManager:
 
             self.render_map.remove_selected_tile(mouse_pos_raw)
 
-            if tile.tile_code in Constants.TILES_THAT_GROW:
+            if tile.tile_code in GameVars.TILES_THAT_GROW:
                 self.render_map.remove_growing_tile(mouse_pos_raw)
 
             # Player has unlocked a new item (Crafting chests are not added to the inventory)
-            if tile.tile_code == Constants.TileCode.CRAFTING_CHEST.value:
+            if tile.tile_code == GameVars.TileCode.CRAFTING_CHEST.value:
                 event = self.render_crafting.unlock_next_item()
                 self.crafting_update_events.append(event)
 
             else:
 
-                items_to_be_added = Constants.TILES_ITEM_MAP[tile.tile_code]
+                items_to_be_added = GameVars.TILES_ITEM_MAP[tile.tile_code]
 
                 for item_tile_code in items_to_be_added:
 
@@ -103,16 +103,16 @@ class WorldChangeManager:
             return
 
         # Can only place new tiles on top of buildable ones
-        if tile.tile_code not in Constants.TILES_BUILDABLE:
+        if tile.tile_code not in GameVars.TILES_BUILDABLE:
             return
 
 
         item = self.render_inventory.get_selected_item()
 
-        if item.tile_code not in Constants.ITEMS_PLACEABLE:
+        if item.tile_code not in GameVars.ITEMS_PLACEABLE:
             return
 
-        if item.tile_code in Constants.TILES_THAT_GROW:
+        if item.tile_code in GameVars.TILES_THAT_GROW:
             self.render_map.add_growing_tile(mouse_pos_raw, item.tile_code)
 
         # If no item is selected
@@ -144,9 +144,9 @@ class WorldChangeManager:
         tile_code = tile_to_break.tile_code
 
         x, y = self.render_map.get_top_left_xy_from_ij(i, j)
-        y += Constants.TILE_SIZE - 5
+        y += GameVars.TILE_SIZE - 5
 
-        total_hp = Constants.TILE_HIT_POINTS[tile_code]
+        total_hp = GameVars.TILE_HIT_POINTS[tile_code]
         remaining_hp = total_hp - self.tile_to_break_thoughness
 
         return HpRect(x, y, remaining_hp, total_hp)
@@ -157,3 +157,12 @@ class WorldChangeManager:
     def frame_end(self):
         if not self.is_breaking:
             self.__reset_tile_to_break()
+
+    def get_screen_sprites(self):
+        return self.render_map.get_sprites()
+
+    def get_selected_tile_sprite(self, mouse_pos):
+        return self.render_map.get_selected_tile_sprite(mouse_pos)
+
+    def re_apply_effects(self):
+        self.render_map.re_apply_effects()

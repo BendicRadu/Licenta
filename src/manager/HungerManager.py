@@ -4,7 +4,7 @@ import time
 from domain.Exceptions import PlayerStarvedException
 from sprites.HungerBar import HungerBar
 from ui.inventory.RenderInventory import RenderInventory
-from util import Constants
+from util import GameVars
 from util.Singleton import Singleton
 
 
@@ -20,11 +20,11 @@ class HungerManager:
 
         item = self.render_inventory.get_item_by_mouse_pos(mouse_pos)
 
-        if item.is_empty_cell() or item.tile_code not in Constants.FOOD_ITEMS:
+        if item.is_empty_cell() or item.tile_code not in GameVars.FOOD_ITEMS:
             return
 
 
-        self.player_stats.player_hunger += Constants.FOOD_VALUES[item.tile_code]
+        self.player_stats.player_hunger += GameVars.FOOD_VALUES[item.tile_code]
 
 
         if self.player_stats.player_hunger > 100:
@@ -39,9 +39,9 @@ class HungerManager:
         time_diff = current_time - self.last_tick_timestamp
         minute_diff = time_diff.total_seconds() // 60
 
-        if minute_diff > Constants.HUNGER_TICK_DURATION:
+        if minute_diff > GameVars.HUNGER_TICK_DURATION:
 
-            if self.player_stats.player_hunger - Constants.HUNGER_TICK_VALUE <= 0:
+            if self.player_stats.player_hunger - GameVars.HUNGER_TICK_VALUE <= 0:
                 raise PlayerStarvedException()
 
             self.player_stats.player_hunger -= 10
@@ -51,7 +51,7 @@ class HungerManager:
     def get_hunger_bar_sprite(self):
         hunger_left = self.player_stats.player_hunger
         hunger_total = 100
-        x = Constants.HUNGER_BAR_X
-        y = Constants.HUNGER_BAR_Y
+        x = GameVars.HUNGER_BAR_X
+        y = GameVars.HUNGER_BAR_Y
 
         return HungerBar(x, y, hunger_left, hunger_total)

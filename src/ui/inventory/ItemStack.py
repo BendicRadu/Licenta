@@ -1,4 +1,4 @@
-from util import Constants
+from util import GameVars
 
 
 class ItemStack:
@@ -75,6 +75,6 @@ class ItemStack:
         return self.quantity == 0
 
     def is_full(self):
-        return self.quantity == Constants.ITEM_STACK_SIZE
+        return self.quantity == GameVars.ITEM_STACK_SIZE
 
 
