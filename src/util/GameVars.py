@@ -128,12 +128,15 @@ class TileCode(Enum):
     NaN = '-1'
     GRASS = '0'
     ROCK = '1'
+    ROCK_FRONT = '1_1'
+    ROCK_TOP = '1_2'
     TREE = '2'
     WATER = '4'
     WOOD_FLOOR = '5'
     WHEAT_SEEDS = '6'
     WHEAT_GROWING = '6_1'
     WHEAT = '6_2'
+    WHEAT_TOP = '6_3'
     BREAD = '7'
 
     MOVER_RIGHT = '8'
@@ -165,12 +168,16 @@ class TileCode(Enum):
 # How long does it take to break a tile
 TILE_HIT_POINTS = {
     TileCode.ROCK.value: 100,
+    TileCode.ROCK_FRONT.value: 100,
+    TileCode.ROCK_TOP.value: 100,
+
     TileCode.TREE.value: 50,
     TileCode.WOOD_FLOOR.value: 50,
     TileCode.CRAFTING_CHEST.value: 200,
     TileCode.WHEAT_SEEDS.value: 10,
     TileCode.WHEAT_GROWING.value: 10,
     TileCode.WHEAT.value: 10,
+    TileCode.WHEAT_TOP.value: 10,
 
     TileCode.MOVER_RIGHT.value: 1,
     TileCode.MOVER_RIGHT.value + "_1": 1,
@@ -190,9 +197,14 @@ TILE_HIT_POINTS = {
 
 TILES_WITH_COLLIDERS = [
     TileCode.ROCK.value,
+    TileCode.ROCK_FRONT.value,
+    TileCode.ROCK_TOP.value,
     TileCode.TREE.value,
     TileCode.WATER.value,
-    TileCode.CRAFTING_CHEST.value
+    TileCode.CRAFTING_CHEST.value,
+
+    TileCode.WHEAT.value,
+    TileCode.WHEAT_TOP.value
 ]
 
 TILES_BUILDABLE = [
@@ -240,21 +252,26 @@ TILES_ANIMATED = [
 
 TILES_BREAKABLE = [
     TileCode.ROCK.value,
+    TileCode.ROCK_FRONT.value,
+    TileCode.ROCK_TOP.value,
     TileCode.TREE.value,
     TileCode.WOOD_FLOOR.value,
     TileCode.CRAFTING_CHEST.value,
     TileCode.WHEAT_SEEDS.value,
     TileCode.WHEAT_GROWING.value,
     TileCode.WHEAT.value,
+    TileCode.WHEAT_TOP.value
 ]
 
 TILES_BREAKABLE.extend(TILES_ANIMATED)
 
 TILES_OPAQUE = [TileCode.ROCK.value, TileCode.NaN.value]
 TILES_ORE = [TileCode.ROCK.value]
-TILES_THAT_GROW = [TileCode.WHEAT_SEEDS, TileCode.WHEAT_GROWING, TileCode.WHEAT]
-
-
+TILES_THAT_GROW = [TileCode.WHEAT_SEEDS.value,
+                   TileCode.WHEAT_GROWING.value,
+                   TileCode.WHEAT_TOP.value,
+                   TileCode.WHEAT.value
+                   ]
 
 TILES_ANIMATION_FRAMES = {
     TileCode.MOVER_RIGHT.value: 5,
@@ -339,11 +356,15 @@ TILES_GROWTH_STAGES = {
 TILES_ITEM_MAP = {
 
     TileCode.ROCK.value: [TileCode.ROCK.value],
+    TileCode.ROCK_FRONT.value: [TileCode.ROCK.value],
+    TileCode.ROCK_TOP.value: [TileCode.ROCK.value],
+
     TileCode.TREE.value: [TileCode.TREE.value],
     TileCode.WOOD_FLOOR.value: [TileCode.WOOD_FLOOR.value],
     TileCode.WHEAT_SEEDS.value: [TileCode.WHEAT_SEEDS.value],
     TileCode.WHEAT_GROWING.value: [TileCode.WHEAT_SEEDS.value],
     TileCode.WHEAT.value: [TileCode.WHEAT_SEEDS.value, TileCode.WHEAT_SEEDS.value, TileCode.WHEAT.value],
+    TileCode.WHEAT_TOP.value: [TileCode.WHEAT_SEEDS.value, TileCode.WHEAT_SEEDS.value, TileCode.WHEAT.value],
 
     TileCode.MOVER_RIGHT.value: [TileCode.MOVER_RIGHT.value],
     TileCode.MOVER_RIGHT.value + "_1": [TileCode.MOVER_RIGHT.value],
@@ -518,8 +539,7 @@ class CraftingItems(Enum):
 
         TileCode.WOOD_FLOOR.value,
         {
-            TileCode.TREE.value: 2,
-            TileCode.ROCK.value: 2
+            TileCode.TREE.value: 2
         }
     )
 

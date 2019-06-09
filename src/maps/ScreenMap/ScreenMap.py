@@ -26,8 +26,6 @@ class ScreenMap:
 
         self.path_finder = AStar(self.matrix.matrix)
 
-
-
     def get_chunk_offset(self):
         return (self.player.global_y // GameVars.TILE_SIZE // GameVars.CHUNK_SIZE,
                 self.player.global_x // GameVars.TILE_SIZE // GameVars.CHUNK_SIZE)
@@ -36,12 +34,11 @@ class ScreenMap:
         return (self.player.global_y // GameVars.TILE_SIZE % GameVars.CHUNK_SIZE,
                 self.player.global_x // GameVars.TILE_SIZE % GameVars.CHUNK_SIZE)
 
-
     def get_tiles(self):
         return self.matrix
 
     # Get global i and j for the PLAYER
-    def get_player_global_i_j(self, offset_i = 0, offset_j = 0):
+    def get_player_global_i_j(self, offset_i=0, offset_j=0):
 
         chunk_i = self.current_chunk_offset[0]
         chunk_j = self.current_chunk_offset[1]
@@ -54,7 +51,6 @@ class ScreenMap:
 
         return global_i, global_j
 
-
     def get_updated_chunk_offset(self, x, y):
         return (y // GameVars.TILE_SIZE // GameVars.CHUNK_SIZE,
                 x // GameVars.TILE_SIZE // GameVars.CHUNK_SIZE)
@@ -65,19 +61,18 @@ class ScreenMap:
 
     def update_tiles(self):
 
-        row_size    = GameVars.WIDTH_NO_OF_TILES
+        row_size = GameVars.WIDTH_NO_OF_TILES
         column_size = GameVars.HEIGHT_NO_OF_TILES
 
-        base_global_i, base_global_j = self.get_player_global_i_j(-GameVars.HEIGHT_NO_OF_TILES // 2, -GameVars.WIDTH_NO_OF_TILES // 2)
+        base_global_i, base_global_j = self.get_player_global_i_j(-GameVars.HEIGHT_NO_OF_TILES // 2,
+                                                                  -GameVars.WIDTH_NO_OF_TILES // 2)
 
         for i in range(column_size):
             for j in range(row_size):
-
                 tile = self.world_map.get_tile(base_global_i + i, base_global_j + j)
                 self.matrix.add_tile(i, j, tile)
 
         self.apply_effects()
-
 
     def _get_buffered_tile_matrix(self, buff_i, buff_j):
 
@@ -110,13 +105,11 @@ class ScreenMap:
 
         end_tile = self.get_selected_tile(mouse_pos)
 
-
         if end_tile.tile_code in GameVars.TILES_WITH_COLLIDERS:
             return
 
-
         start_ij = (start_tile.i, start_tile.j)
-        end_ij   = (end_tile.i, end_tile.j)
+        end_ij = (end_tile.i, end_tile.j)
 
         return self.path_finder.find_path(start_ij, end_ij)
 
@@ -190,7 +183,6 @@ class ScreenMap:
         diff_i = prev_chunk_pos[0] - self.chunk_pos[0]
         diff_j = prev_chunk_pos[1] - self.chunk_pos[1]
 
-
         if abs(diff_i) == GameVars.CHUNK_SIZE - 1 or abs(diff_j) == GameVars.CHUNK_SIZE - 1:
             self.update_tiles()
             self.apply_effects()
@@ -210,8 +202,6 @@ class ScreenMap:
         elif diff_j < 0:
             self.move_map_right()
             self.apply_effects()
-
-
 
     def move_map_up(self):
         row_size = GameVars.WIDTH_NO_OF_TILES
@@ -244,7 +234,6 @@ class ScreenMap:
         del self.matrix.matrix[0]
         self.matrix.matrix.append(row)
 
-
     def move_map_left(self):
         column_size = GameVars.HEIGHT_NO_OF_TILES
 
@@ -269,7 +258,6 @@ class ScreenMap:
             del self.matrix.matrix[i][0]
             self.matrix.matrix[i].append(self.world_map.get_tile(base_global_i + i, j))
 
-
     def get_matrix_tile(self, i, j):
         return self.matrix.get_tile(i, j)
 
@@ -284,7 +272,6 @@ class ScreenMap:
             self.matrix.get_tile(center_i, center_j)
         )
 
-
     def apply_effects(self):
 
         self.counter += 1
@@ -298,15 +285,38 @@ class ScreenMap:
                 if matrix[i][j] == GameVars.TileCode.GRASS.value:
                     continue
 
-                self.apply_rock_fog_of_war(matrix, i, j)
                 self.apply_growing_tiles_growth(matrix, i, j)
+
+                self.apply_wheat_walls(matrix, i, j)
+                self.apply_rock_fog_of_war(matrix, i, j)
+                self.apply_rock_walls(matrix, i, j)
                 self.apply_animations(matrix, i, j)
 
+    def apply_rock_walls(self, matrix, i, j):
+
+        if self.matrix.get_tile(i - 1, j - 1) == '-1' or (not matrix[i][j] in GameVars.TILES_ORE):
+            return
+
+        if matrix[i + 1][j] not in GameVars.TILES_ORE:
+            self.matrix.set_tile(i - 1, j - 1, matrix[i][j] + "_1")
+        else:
+            self.matrix.set_tile(i - 1, j - 1, matrix[i][j] + "_2")
+
+    def apply_wheat_walls(self, matrix, i, j):
+
+        if i == len(self.matrix.matrix):
+            return
+
+        if self.matrix.get_tile(i - 1, j - 1) != GameVars.TileCode.WHEAT.value:
+            return
+
+        if self.matrix.get_tile(i, j - 1) == GameVars.TileCode.WHEAT.value or \
+                self.matrix.get_tile(i, j - 1) == GameVars.TileCode.WHEAT_TOP.value:
+            self.matrix.set_tile(i - 1, j - 1, matrix[i][j] + "_3")
 
 
-    def apply_rock_fog_of_war(self, buffered_matrix, i, j):
+    def apply_rock_fog_of_war(self, matrix, i, j):
 
-        matrix = buffered_matrix
         # Center
         if not matrix[i][j] in GameVars.TILES_ORE:
             return
@@ -337,9 +347,7 @@ class ScreenMap:
 
         self.matrix.set_tile(i - 1, j - 1, "-1")
 
-    def apply_growing_tiles_growth(self, buffered_matrix, i, j):
-
-        matrix = buffered_matrix
+    def apply_growing_tiles_growth(self, matrix, i, j):
 
         # Growing Tiles
         if matrix[i][j] not in GameVars.TILES_THAT_GROW:
@@ -356,10 +364,7 @@ class ScreenMap:
 
         self.matrix.set_tile(i - 1, j - 1, tile_code)
 
-
-    def apply_animations(self, buffered_matrix, i, j):
-
-        matrix = buffered_matrix
+    def apply_animations(self, matrix, i, j):
 
         if matrix[i][j] not in GameVars.TILES_ANIMATED:
             return
@@ -377,12 +382,11 @@ class ScreenMap:
             self.matrix.set_tile(i - 1, j - 1, matrix[i][j])
 
 
-
 class ScreenMapMatrix:
 
     def __init__(self):
         self.height = GameVars.HEIGHT_NO_OF_TILES
-        self.width  = GameVars.WIDTH_NO_OF_TILES
+        self.width = GameVars.WIDTH_NO_OF_TILES
         self.matrix = []
 
         for i in range(self.height):
@@ -392,16 +396,15 @@ class ScreenMapMatrix:
 
             self.matrix.append(row)
 
-
     def add_tile(self, i, j, tile):
         self.matrix[i][j] = tile
-
 
     def get_tile(self, i, j):
         return self.matrix[i][j]
 
     def set_tile(self, i, j, value):
         self.matrix[i][j] = value
+
 
 class Node:
     """A node class for A* Pathfinding"""
@@ -414,10 +417,9 @@ class Node:
         self.h = 0
         self.f = 0
 
-
     def __repr__(self):
 
-        estr  = ""
+        estr = ""
         node = self.parent
 
         estr += str(self.position)
@@ -442,6 +444,7 @@ class Node:
             node = node.parent
 
         return tile_list
+
 
 class PathFinder:
 

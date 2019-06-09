@@ -25,9 +25,9 @@ class DrawEngine:
 
         self.screen = pygame.display.set_mode(
             (GameVars.SCREEN_WIDTH, GameVars.SCREEN_HEIGHT),
-            pygame.DOUBLEBUF | pygame.FULLSCREEN
+            pygame.DOUBLEBUF
         )
-
+#| pygame.FULLSCREEN
         self.screen.set_alpha(None)
 
         self.game_screen = pygame.Surface(
