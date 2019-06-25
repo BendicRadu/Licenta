@@ -82,7 +82,8 @@ class Chunk:
 
                     if tile_code in GameVars.TILES_THAT_GROW:
                         global_pos = self.get_global_ij((i, j))
-                        growing_tile_batch.append((global_pos[0], global_pos[1], tile_code, int(round(time.time() * 1000))))
+                        growing_tile_batch.append((global_pos[0], global_pos[1], tile_code,
+                                                   int(round(time.time() * 1000) - 10000000)))
 
 
                 self.matrix[i][j] = str(tile_code)

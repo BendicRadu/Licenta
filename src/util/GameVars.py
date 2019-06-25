@@ -518,9 +518,9 @@ class CraftingItems(Enum):
 
         # TODO Change to appropriate tile code
 
-        TileCode.BREAD.value,
+        TileCode.MOVER_RIGHT.value,
         {
-            TileCode.WHEAT.value: 2
+            TileCode.WHEAT.value: 1
         }
     )
 
