@@ -1,6 +1,7 @@
 import pygame as pygame
 
 from util import GameVars
+from util.GameVars import BASE_PATH
 
 
 class ImageLoader:
@@ -11,9 +12,9 @@ class ImageLoader:
         self.inventory_image_map = {}
         self.crafting_image_map = {}
 
-        self.WORLD_IMAGE_PATH = "C:\\Licenta\\Licenta\\resources\\Sprites\\world\\"
-        self.UI_IMAGE_PATH = "C:\\Licenta\\Licenta\\resources\\Sprites\\ui\\"
-        self.PLAYER_IMAGE_PATH = "C:\\Licenta\\Licenta\\resources\\Sprites\\player\\"
+        self.WORLD_IMAGE_PATH = BASE_PATH + "resources\\Sprites\\world\\"
+        self.UI_IMAGE_PATH = BASE_PATH + "resources\\Sprites\\ui\\"
+        self.PLAYER_IMAGE_PATH = BASE_PATH + "resources\\Sprites\\player\\"
 
         self.player_images = []
 

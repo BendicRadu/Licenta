@@ -45,6 +45,15 @@ class RenderCrafting:
 
         return self.crafting.can_craft()
 
+    def is_selected_locked(self, mouse_pos):
+
+        x, y = mouse_pos
+
+        j = (x - GameVars.CRAFTING_TOP_LEFT[0]) // GameVars.CRAFTING_CELL_SIZE
+        i = (y - GameVars.CRAFTING_TOP_LEFT[1]) // GameVars.CRAFTING_CELL_SIZE
+
+        return self.crafting.is_selected_locked((i, j))
+
     def select_item(self, mouse_pos):
         x, y = mouse_pos
 

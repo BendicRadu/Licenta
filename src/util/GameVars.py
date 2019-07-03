@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 
 # -----------------------SIZES----------------------------------------
@@ -8,6 +9,17 @@ from pygame.rect import Rect
 
 from domain.GrowingTile import TileGrowthRate
 from ui.crafting.CraftingItem import CraftingItem
+
+_cwd = os.getcwd()
+
+BASE_PATH = ""
+
+for i in _cwd.split("\\"):
+    if i == "LicentaApp":
+        BASE_PATH += i + "\\"
+        break
+
+    BASE_PATH += i + "\\"
 
 
 class Direction(Enum):
@@ -186,13 +198,22 @@ TILE_HIT_POINTS = {
     TileCode.MOVER_RIGHT.value + "_4": 1,
 
     TileCode.MOVER_LEFT.value: 1,
-    # TODO add rest
+    TileCode.MOVER_LEFT.value + "_1": 1,
+    TileCode.MOVER_LEFT.value + "_2": 1,
+    TileCode.MOVER_LEFT.value + "_3": 1,
+    TileCode.MOVER_LEFT.value + "_4": 1,
 
     TileCode.MOVER_UP.value: 1,
-    # TODO add rest
+    TileCode.MOVER_UP.value + "_1": 1,
+    TileCode.MOVER_UP.value + "_2": 1,
+    TileCode.MOVER_UP.value + "_3": 1,
+    TileCode.MOVER_UP.value + "_4": 1,
 
-    TileCode.MOVER_DOWN.value: 1
-    # TODO add rest
+    TileCode.MOVER_DOWN.value: 1,
+    TileCode.MOVER_DOWN.value + "_1": 1,
+    TileCode.MOVER_DOWN.value + "_2": 1,
+    TileCode.MOVER_DOWN.value + "_3": 1,
+    TileCode.MOVER_DOWN.value + "_4": 1,
 }
 
 TILES_WITH_COLLIDERS = [
@@ -239,14 +260,23 @@ TILES_ANIMATED = [
     TileCode.MOVER_RIGHT.value + "_3",
     TileCode.MOVER_RIGHT.value + "_4",
 
-    TileCode.MOVER_LEFT,
-    # TODO add rest
+    TileCode.MOVER_LEFT.value,
+    TileCode.MOVER_LEFT.value + "_1",
+    TileCode.MOVER_LEFT.value + "_2",
+    TileCode.MOVER_LEFT.value + "_3",
+    TileCode.MOVER_LEFT.value + "_4",
 
-    TileCode.MOVER_UP,
-    # TODO add rest
+    TileCode.MOVER_UP.value,
+    TileCode.MOVER_UP.value + "_1",
+    TileCode.MOVER_UP.value + "_2",
+    TileCode.MOVER_UP.value + "_3",
+    TileCode.MOVER_UP.value + "_4",
 
-    TileCode.MOVER_DOWN
-    # TODO add rest
+    TileCode.MOVER_DOWN.value,
+    TileCode.MOVER_DOWN.value + "_1",
+    TileCode.MOVER_DOWN.value + "_2",
+    TileCode.MOVER_DOWN.value + "_3",
+    TileCode.MOVER_DOWN.value + "_4",
 ]
 
 
@@ -275,9 +305,9 @@ TILES_THAT_GROW = [TileCode.WHEAT_SEEDS.value,
 
 TILES_ANIMATION_FRAMES = {
     TileCode.MOVER_RIGHT.value: 5,
-    TileCode.MOVER_LEFT.value: 1,
-    TileCode.MOVER_UP.value: 1,
-    TileCode.MOVER_DOWN.value: 1
+    TileCode.MOVER_LEFT.value: 5,
+    TileCode.MOVER_UP.value: 5,
+    TileCode.MOVER_DOWN.value: 5
 }
 
 
@@ -291,13 +321,22 @@ TILES_MOVERS_DIRECTIONS = {
     TileCode.MOVER_RIGHT.value + "_4": Direction.RIGHT,
 
     TileCode.MOVER_LEFT.value: Direction.LEFT,
-    # TODO add rest
+    TileCode.MOVER_LEFT.value + "_1": Direction.LEFT,
+    TileCode.MOVER_LEFT.value + "_2": Direction.LEFT,
+    TileCode.MOVER_LEFT.value + "_3": Direction.LEFT,
+    TileCode.MOVER_LEFT.value + "_4": Direction.LEFT,
 
     TileCode.MOVER_UP.value: Direction.UP,
-    # TODO add rest
+    TileCode.MOVER_UP.value + "_1": Direction.UP,
+    TileCode.MOVER_UP.value + "_2": Direction.UP,
+    TileCode.MOVER_UP.value + "_3": Direction.UP,
+    TileCode.MOVER_UP.value + "_4": Direction.UP,
 
-    TileCode.MOVER_DOWN.value: Direction.DOWN
-    # TODO add rest
+    TileCode.MOVER_DOWN.value: Direction.DOWN,
+    TileCode.MOVER_DOWN.value + "_1": Direction.DOWN,
+    TileCode.MOVER_DOWN.value + "_2": Direction.DOWN,
+    TileCode.MOVER_DOWN.value + "_3": Direction.DOWN,
+    TileCode.MOVER_DOWN.value + "_4": Direction.DOWN,
 
 }
 
@@ -310,14 +349,22 @@ TILES_MOVERS_SPEEDS = {
     TileCode.MOVER_RIGHT.value + "_4": 10,
 
     TileCode.MOVER_LEFT.value: 10,
-    # TODO add rest
+    TileCode.MOVER_LEFT.value + "_1": 10,
+    TileCode.MOVER_LEFT.value + "_2": 10,
+    TileCode.MOVER_LEFT.value + "_3": 10,
+    TileCode.MOVER_LEFT.value + "_4": 10,
 
     TileCode.MOVER_UP.value: 10,
-    # TODO add rest
+    TileCode.MOVER_UP.value + "_1": 10,
+    TileCode.MOVER_UP.value + "_2": 10,
+    TileCode.MOVER_UP.value + "_3": 10,
+    TileCode.MOVER_UP.value + "_4": 10,
 
-    TileCode.MOVER_DOWN.value: 10
-    # TODO add rest
-
+    TileCode.MOVER_DOWN.value: 10,
+    TileCode.MOVER_DOWN.value + "_1": 10,
+    TileCode.MOVER_DOWN.value + "_2": 10,
+    TileCode.MOVER_DOWN.value + "_3": 10,
+    TileCode.MOVER_DOWN.value + "_4": 10
 }
 
 # Time until player hunger decreases in minutes
@@ -372,12 +419,23 @@ TILES_ITEM_MAP = {
     TileCode.MOVER_RIGHT.value + "_3": [TileCode.MOVER_RIGHT.value],
     TileCode.MOVER_RIGHT.value + "_4": [TileCode.MOVER_RIGHT.value],
 
-    TileCode.MOVER_LEFT: [TileCode.MOVER_LEFT],
-    # TODO Add rest
-    TileCode.MOVER_UP: [TileCode.MOVER_UP],
-    # TODO Add rest
-    TileCode.MOVER_DOWN: [TileCode.MOVER_DOWN]
-    # TODO Add rest
+    TileCode.MOVER_LEFT.value: [TileCode.MOVER_LEFT.value],
+    TileCode.MOVER_LEFT.value + "_1": [TileCode.MOVER_LEFT.value],
+    TileCode.MOVER_LEFT.value + "_2": [TileCode.MOVER_LEFT.value],
+    TileCode.MOVER_LEFT.value + "_3": [TileCode.MOVER_LEFT.value],
+    TileCode.MOVER_LEFT.value + "_4": [TileCode.MOVER_LEFT.value],
+
+    TileCode.MOVER_UP.value: [TileCode.MOVER_UP.value],
+    TileCode.MOVER_UP.value + "_1": [TileCode.MOVER_UP.value],
+    TileCode.MOVER_UP.value + "_2": [TileCode.MOVER_UP.value],
+    TileCode.MOVER_UP.value + "_3": [TileCode.MOVER_UP.value],
+    TileCode.MOVER_UP.value + "_4": [TileCode.MOVER_UP.value],
+
+    TileCode.MOVER_DOWN.value: [TileCode.MOVER_DOWN.value],
+    TileCode.MOVER_DOWN.value + "_1": [TileCode.MOVER_DOWN.value],
+    TileCode.MOVER_DOWN.value + "_2": [TileCode.MOVER_DOWN.value],
+    TileCode.MOVER_DOWN.value + "_3": [TileCode.MOVER_DOWN.value],
+    TileCode.MOVER_DOWN.value + "_4": [TileCode.MOVER_DOWN.value],
 
 }
 
@@ -514,32 +572,104 @@ def can_spawn_crafting_chest():
 
 
 class CraftingItems(Enum):
-    WOOD_FLOOR = CraftingItem(
 
-        # TODO Change to appropriate tile code
-
-        TileCode.MOVER_RIGHT.value,
-        {
-            TileCode.WHEAT.value: 1
-        }
-    )
-
-    ROCK_FLOOR = CraftingItem(
+    BREAD = CraftingItem(
 
         # TODO here too
 
-        TileCode.ROCK.value,
+        TileCode.BREAD.value,
+        {
+            TileCode.WHEAT.value: 3
+        }
+    )
+
+    MOVER_LEFT = CraftingItem(
+
+        # TODO Change to appropriate tile code
+
+        TileCode.MOVER_LEFT.value,
         {
             TileCode.ROCK.value: 1
         }
     )
 
-    # TODO Remove this :)
-    MAGIC_TILE = CraftingItem(
+    MOVER_RIGHT = CraftingItem(
 
-        TileCode.WOOD_FLOOR.value,
+        # TODO Change to appropriate tile code
+
+        TileCode.MOVER_RIGHT.value,
         {
-            TileCode.TREE.value: 2
+            TileCode.ROCK.value: 1
+        }
+    )
+
+    MOVER_UP = CraftingItem(
+
+        # TODO Change to appropriate tile code
+
+        TileCode.MOVER_UP.value,
+        {
+            TileCode.ROCK.value: 1
+        }
+    )
+
+    MOVER_DOWN = CraftingItem(
+
+        # TODO Change to appropriate tile code
+
+        TileCode.MOVER_DOWN.value,
+        {
+            TileCode.ROCK.value: 1
+        }
+    )
+
+    BREAD2 = CraftingItem(
+
+        # TODO here too
+
+        TileCode.BREAD.value,
+        {
+            TileCode.WHEAT.value: 3
+        }
+    )
+
+    BREAD3 = CraftingItem(
+
+        # TODO here too
+
+        TileCode.BREAD.value,
+        {
+            TileCode.WHEAT.value: 3
+        }
+    )
+
+    BREAD4 = CraftingItem(
+
+        # TODO here too
+
+        TileCode.BREAD.value,
+        {
+            TileCode.WHEAT.value: 3
+        }
+    )
+
+    BREAD5 = CraftingItem(
+
+        # TODO here too
+
+        TileCode.BREAD.value,
+        {
+            TileCode.WHEAT.value: 3
+        }
+    )
+
+    BREAD6 = CraftingItem(
+
+        # TODO here too
+
+        TileCode.BREAD.value,
+        {
+            TileCode.WHEAT.value: 3
         }
     )
 

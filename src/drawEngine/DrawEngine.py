@@ -66,10 +66,11 @@ class DrawEngine:
         self.update_required_items()
         self.update_crafting()
         self.draw_tile_to_break_hitpoints()
-        self.draw_selected_inventory_item()
-        self.draw_selected_crafting_item()
         self.draw_crafting_button_border()
         self.draw_hunger_bar()
+        self.draw_ui_grids()
+        self.draw_selected_inventory_item()
+        self.draw_selected_crafting_item()
 
 
     def draw_tile_sprites(self):
@@ -98,8 +99,8 @@ class DrawEngine:
             return
 
         pygame.draw.rect(self.screen, (255, 0, 0),
-                         pygame.Rect(selected_cell.x, selected_cell.y,
-                                     GameVars.INVENTORY_CELL_SIZE, GameVars.INVENTORY_CELL_SIZE),
+                         pygame.Rect(selected_cell.x + 1, selected_cell.y + 1,
+                                     GameVars.INVENTORY_CELL_SIZE + 1, GameVars.INVENTORY_CELL_SIZE + 1),
                          1)
 
     def draw_selected_crafting_item(self):
@@ -115,8 +116,8 @@ class DrawEngine:
             return
 
         pygame.draw.rect(self.screen, (255, 0, 0),
-                         pygame.Rect(selected_cell.x, selected_cell.y,
-                                     GameVars.CRAFTING_CELL_SIZE, GameVars.CRAFTING_CELL_SIZE),
+                         pygame.Rect(selected_cell.x + 1, selected_cell.y + 1,
+                                     GameVars.CRAFTING_CELL_SIZE + 1, GameVars.CRAFTING_CELL_SIZE + 1),
                          1)
 
     def draw_selected_tile(self):
@@ -359,3 +360,61 @@ class DrawEngine:
 
     def clear_crafting_events(self):
         self.world_change_manager.crafting_update_events = []
+
+
+
+    def draw_ui_grids(self):
+        self.draw_inventory_grid()
+        self.draw_crafting_grid()
+
+
+    def draw_inventory_grid(self):
+
+        for i in range(6):
+            y1 = i * GameVars.INVENTORY_CELL_SIZE + GameVars.INVENTORY_TOP_LEFT[1]
+            x1 = GameVars.INVENTORY_TOP_LEFT[0]
+
+            y2 = y1
+            x2 = x1 + GameVars.INVENTORY_SCREEN_WIDTH
+
+            pygame.draw.line(self.screen, (0, 0, 0), (x1, y1), (x2, y2), 2)
+
+
+        for i in range(7):
+
+            x1 = i * GameVars.INVENTORY_CELL_SIZE + GameVars.INVENTORY_TOP_LEFT[0]
+            y1 = GameVars.INVENTORY_TOP_LEFT[1]
+
+            y2 = y1 + GameVars.INVENTORY_SCREEN_HEIGHT
+            x2 = x1
+
+            pygame.draw.line(self.screen, (0, 0, 0), (x1, y1), (x2, y2), 2)
+
+
+    def draw_crafting_grid(self):
+
+        for i in range(6):
+            y1 = i * GameVars.CRAFTING_CELL_SIZE + GameVars.CRAFTING_TOP_LEFT[1]
+            x1 = GameVars.CRAFTING_TOP_LEFT[0]
+
+            y2 = y1
+            x2 = x1 + GameVars.CRAFTING_SCREEN_WIDTH
+
+            pygame.draw.line(self.screen, (0, 0, 0), (x1, y1), (x2, y2), 2)
+
+        for i in range(7):
+
+            x1 = i * GameVars.CRAFTING_CELL_SIZE + GameVars.CRAFTING_TOP_LEFT[0]
+            y1 = GameVars.CRAFTING_TOP_LEFT[1]
+
+            y2 = y1 + GameVars.CRAFTING_SCREEN_HEIGHT
+            x2 = x1
+
+            pygame.draw.line(self.screen, (0, 0, 0), (x1, y1), (x2, y2), 2)
+
+
+
+
+
+
+

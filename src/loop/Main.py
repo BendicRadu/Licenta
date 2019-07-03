@@ -72,6 +72,7 @@ class MainLoop:
                 game_over = True
 
             except GameOverException:
+                self.game_state_manager.save()
                 game_over = True
 
         pygame.quit()

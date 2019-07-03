@@ -16,6 +16,9 @@ class Crafting:
     def get_crafting_items_no(self):
         return self.get_matrix().unlocked_items_no
 
+    def is_selected_locked(self, pos):
+        return self.get_matrix()[pos].is_empty_cell() or self.get_matrix()[pos].is_locked()
+
     def select(self, pos):
         if self.get_matrix()[pos].is_empty_cell() or self.get_matrix()[pos].is_locked():
             self.selected_pos = None

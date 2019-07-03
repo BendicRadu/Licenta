@@ -7,8 +7,6 @@ class CraftingManager:
 
     def __init__(self, render_crafting: RenderCrafting, render_inventory: RenderInventory):
 
-        # TODO Replace with constructor params
-
         self.render_crafting  = render_crafting
         self.render_inventory = render_inventory
 
@@ -17,6 +15,10 @@ class CraftingManager:
 
 
     def select_crafting_recepie(self, mouse_pos):
+
+        if (self.render_crafting.is_selected_locked(mouse_pos)):
+            return
+
         self.render_crafting.select_item(mouse_pos)
         self.required_items_update_events.append(self.render_crafting.get_required_items_update_event())
 

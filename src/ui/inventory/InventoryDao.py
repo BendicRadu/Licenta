@@ -5,14 +5,14 @@ from domain.GrowingTile import GrowingTile
 import sqlite3
 
 from ui.inventory.ItemStack import ItemStack
+from util.GameVars import BASE_PATH
 
 
 class InventoryDao:
 
-    def __init__(self):
-        self.SQL_LITE_FILE_PATH = "C:\\Licenta\\Licenta\\resources\\sqlLite\\db.sqlite"
+    SQL_LITE_FILE_PATH = BASE_PATH + "resources\\sqlLite\\db.sqlite"
 
-        # TODO change to SQL Lite
+    def __init__(self):
 
         connection = self.get_connection()
         cursor = connection.cursor()
@@ -25,10 +25,10 @@ class InventoryDao:
                        ' PRIMARY KEY(inventory_i, inventory_j)'
                        ');')
 
-        file_path = "C:\\Licenta\\Licenta\\resources\\WorldMap\\50-50-chunk.txt"
+        CONVENIENT_PATH = BASE_PATH + "resources\\WorldMap\\50-50-chunk.txt"
 
         try:
-            with open(file_path):
+            with open(CONVENIENT_PATH):
                 pass
         except OSError:
             self.clear_table()

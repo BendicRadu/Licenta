@@ -4,11 +4,14 @@ import time
 from domain.GrowingTile import GrowingTile
 import sqlite3
 
+from util.GameVars import BASE_PATH
+
 
 class TileGrowthDao:
 
+    SQL_LITE_FILE_PATH = BASE_PATH + "resources\\sqlLite\\db.sqlite"
+
     def __init__(self):
-        self.SQL_LITE_FILE_PATH = "C:\\Licenta\\Licenta\\resources\\sqlLite\\db.sqlite"
 
         connection = self.get_connection()
         cursor = connection.cursor()
@@ -23,10 +26,10 @@ class TileGrowthDao:
 
         self.commit_and_close(connection)
 
-        file_path = "C:\\Licenta\\Licenta\\resources\\WorldMap\\50-50-chunk.txt"
+        CONVENIENT_PATH = BASE_PATH + "resources\\WorldMap\\50-50-chunk.txt"
 
         try:
-            with open(file_path):
+            with open(CONVENIENT_PATH):
                 pass
         except OSError:
             self.clear_table()
@@ -68,8 +71,7 @@ class TileGrowthDao:
                            "(global_i, global_j, tile_code, created_timestamp)"
                            "VALUES"
                            "(?, ?, ?, ?)",
-                           growing_tiles_batch
-                           )
+                           growing_tiles_batch)
 
         self.commit_and_close(connection)
 

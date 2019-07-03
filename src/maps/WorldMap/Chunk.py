@@ -5,10 +5,14 @@ import time
 
 from maps.WorldMap.ChunkGeneration import PerlinNoiseGenerator
 from util import GameVars
+from util.GameVars import BASE_PATH
 from util.Singleton import Singleton
 
 
 class Chunk:
+
+    WORLD_MAP_DIR_PATH = BASE_PATH + "resources\\WorldMap\\"
+    CHUNK_SUFFIX = "-chunk.txt"
 
     def __init__(self, offset_i, offset_j):
 
@@ -26,12 +30,13 @@ class Chunk:
         else:
             self.generate_chunk()
 
+
     def is_chunk_generated(self):
 
         # TODO Change to constant path
 
-        file_path = "C:\\Licenta\\Licenta\\resources\\WorldMap\\" \
-                    + str(self.offset_i) + "-" + str(self.offset_j) + "-chunk.txt"
+        file_path = self.WORLD_MAP_DIR_PATH \
+                    + str(self.offset_i) + "-" + str(self.offset_j) + self.CHUNK_SUFFIX
 
         try:
             with open(file_path):
@@ -42,8 +47,8 @@ class Chunk:
 
     def load_chunk(self):
 
-        file_path = "C:\\Licenta\\Licenta\\resources\\WorldMap\\" \
-                    + str(self.offset_i) + "-" + str(self.offset_j) + "-chunk.txt"
+        file_path = self.WORLD_MAP_DIR_PATH \
+                    + str(self.offset_i) + "-" + str(self.offset_j) + self.CHUNK_SUFFIX
 
         with open(file_path, "r") as file:
             for line in file:
@@ -91,6 +96,9 @@ class Chunk:
 
         self.chunk_mask.apply(self.matrix)
 
+        if self.offset_i == 50 and self.offset_j == 50:
+            self.apply_player_mask()
+
         self.add_growing_tiles(growing_tile_batch)
         self.save_chunk()
 
@@ -99,8 +107,8 @@ class Chunk:
 
     def save_chunk(self):
 
-        file_path = "C:\\Licenta\\Licenta\\resources\\WorldMap\\"
-        file_path += str(self.offset_i) + "-" + str(self.offset_j) + "-chunk.txt"
+        file_path = self.WORLD_MAP_DIR_PATH \
+                + str(self.offset_i) + "-" + str(self.offset_j) + self.CHUNK_SUFFIX
 
         file = open(file_path, "w", newline='')
 
@@ -122,6 +130,15 @@ class Chunk:
             self.offset_j * GameVars.CHUNK_SIZE + pos[1]
         )
 
+    def apply_player_mask(self):
+
+        player = Singleton.player
+
+        player_i, player_j = player.get_local_pos()
+
+        for i in range(player_i - 2, player_i + 3):
+            for j in range(player_j - 2, player_j + 3):
+                self.matrix[i][j] = str(GameVars.TileCode.GRASS.value)
 
 class ChunkMask:
 
@@ -136,15 +153,9 @@ class ChunkMask:
             row = []
 
             for j in range(GameVars.CHUNK_SIZE):
-
-                if self.is_tile_in_circle(i, j) or self.modifier():
-                    row.append(False)
-                else:
-                    row.append(True)
+                row.append(not self.is_tile_in_circle(i, j))
 
             self.mask.append(row)
-
-
 
 
     # r - radius
@@ -154,13 +165,12 @@ class ChunkMask:
         x = ((j - GameVars.CHUNK_SIZE // 2) * GameVars.TILE_SIZE) + GameVars.TILE_SIZE / 2
         y = ((GameVars.CHUNK_SIZE - (i + GameVars.CHUNK_SIZE // 2)) * GameVars.TILE_SIZE) + GameVars.TILE_SIZE / 2
 
-        radius = (GameVars.CHUNK_SIZE - 10) * GameVars.TILE_SIZE
+        radius = (GameVars.CHUNK_SIZE - 15) * GameVars.TILE_SIZE
 
         return abs(x) + abs(y) < radius
 
 
     def apply(self, map_matrix):
-
 
         for i in range(GameVars.CHUNK_SIZE):
             for j in range(GameVars.CHUNK_SIZE):
@@ -168,6 +178,3 @@ class ChunkMask:
                 if self.mask[i][j]:
                     map_matrix[i][j] = str(GameVars.spawn_tile())
 
-
-    def modifier(self):
-        return random.randint(0, 4) == 0
