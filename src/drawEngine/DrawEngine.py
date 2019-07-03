@@ -25,8 +25,10 @@ class DrawEngine:
 
         self.screen = pygame.display.set_mode(
             (GameVars.SCREEN_WIDTH, GameVars.SCREEN_HEIGHT),
-            pygame.DOUBLEBUF | pygame.FULLSCREEN
+            pygame.DOUBLEBUF
         )
+
+        # | pygame.FULLSCREEN
 
         self.screen.set_alpha(None)
 
@@ -67,10 +69,10 @@ class DrawEngine:
         self.update_crafting()
         self.draw_tile_to_break_hitpoints()
         self.draw_crafting_button_border()
-        self.draw_hunger_bar()
         self.draw_ui_grids()
         self.draw_selected_inventory_item()
         self.draw_selected_crafting_item()
+        self.draw_hunger_bar()
 
 
     def draw_tile_sprites(self):
@@ -141,7 +143,7 @@ class DrawEngine:
                          pygame.Rect(selected_tile.x, selected_tile.y, GameVars.TILE_SIZE, GameVars.TILE_SIZE),
                          2)
 
-        self.draw_selected_tile_name(selected_tile.tile_code)
+        #self.draw_selected_tile_name(selected_tile.tile_code)
 
     def draw_selected_tile_name(self, tile_code):
 
@@ -370,7 +372,7 @@ class DrawEngine:
 
     def draw_inventory_grid(self):
 
-        for i in range(6):
+        for i in range(9):
             y1 = i * GameVars.INVENTORY_CELL_SIZE + GameVars.INVENTORY_TOP_LEFT[1]
             x1 = GameVars.INVENTORY_TOP_LEFT[0]
 
@@ -380,7 +382,7 @@ class DrawEngine:
             pygame.draw.line(self.screen, (0, 0, 0), (x1, y1), (x2, y2), 2)
 
 
-        for i in range(7):
+        for i in range(9):
 
             x1 = i * GameVars.INVENTORY_CELL_SIZE + GameVars.INVENTORY_TOP_LEFT[0]
             y1 = GameVars.INVENTORY_TOP_LEFT[1]
@@ -393,7 +395,7 @@ class DrawEngine:
 
     def draw_crafting_grid(self):
 
-        for i in range(6):
+        for i in range(5):
             y1 = i * GameVars.CRAFTING_CELL_SIZE + GameVars.CRAFTING_TOP_LEFT[1]
             x1 = GameVars.CRAFTING_TOP_LEFT[0]
 
@@ -402,7 +404,7 @@ class DrawEngine:
 
             pygame.draw.line(self.screen, (0, 0, 0), (x1, y1), (x2, y2), 2)
 
-        for i in range(7):
+        for i in range(9):
 
             x1 = i * GameVars.CRAFTING_CELL_SIZE + GameVars.CRAFTING_TOP_LEFT[0]
             y1 = GameVars.CRAFTING_TOP_LEFT[1]

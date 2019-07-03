@@ -521,10 +521,10 @@ class AStar(PathFinder):
                     continue
 
                 # Create new node
-                new_node = Node(current_node, node_position)
+                child_node = Node(current_node, node_position)
 
                 # Append
-                children.append(new_node)
+                children.append(child_node)
 
             # Loop through children
             for child in children:
